@@ -6,6 +6,10 @@
 
 using namespace std;
 
+#include "cpptoken.h"
+#include "cpptoken_private.h"
+using namespace cpptoken;
+
 /****************************************************/
 class TestFailure : public exception {
   string msg;
@@ -124,9 +128,24 @@ TestCase::teardown()
 struct TestSuite {
   list<TestCase *> tests;
 
+  ~TestSuite();
+
   void run(TestResult *);
   void addTestCase(TestCase *);
 };
+
+TestSuite::~TestSuite()
+{
+  list<TestCase *>::iterator iter;
+  iter = this->tests.begin();
+  while (iter != this->tests.end()) {
+    TestCase *tc = *iter;
+    delete tc;
+    iter++;
+  }
+}
+
+/************/
 
 void
 TestSuite::run(TestResult *result)
@@ -179,6 +198,18 @@ TC_Basic01::run()
   this->setPass();
 }
 
+struct TC_Basic02 : public TestCase {
+  TC_Basic02() : TestCase("TC_Basic02") {;};
+  void run();
+};
+
+void
+TC_Basic02::run()
+{
+  list<REToken *> *toks = RETokenizer::tokenize("");
+  delete toks;
+  this->setPass();
+}
 
 /*************/
 
@@ -188,11 +219,15 @@ make_basic_suite()
   TestSuite *s;
 
   s = new TestSuite();
+
   s->addTestCase(new TC_Basic01());
+  s->addTestCase(new TC_Basic02());
 
   return s;
 }
 
+/****************************************************/
+/* top level                                        */
 /****************************************************/
 int
 main(int argc, const char **argv)
@@ -202,6 +237,7 @@ main(int argc, const char **argv)
 
   s->run(&result);
   result.report();
+  delete s;
 
   return 0;
 }

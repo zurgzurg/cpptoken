@@ -1,5 +1,5 @@
-#ifndef _CPPTOKEN_H_
-#define _CPPTOKEN_H_
+#ifndef _CPPTOKEN_PRIVATE_H_
+#define _CPPTOKEN_PRIVATE_H_
 
 // Copyright (c) 2010, Ram Bhamidipaty
 // All rights reserved.
@@ -35,16 +35,26 @@
 
 namespace cpptoken {
 
-class Buffer {
- private:
-  
+enum tokType {
+  DOT,
+  STAR,
+  QMARK,
+  LB,
+  RB,
+  PIPE,
+  num_tokType      /* not an actual type */
 };
 
-class Lexer {
- private:
+ class REToken {
+   tokType ttype;
+ };
+  
+ class RETokenizer {
  public:
- private:
-};
+   static list<REToken *> *tokenize(const char *);
+   static list<REToken *> *tokenize(const char *, size_t start, size_t n);
+   static void freeTokList(list<REToken *> *);
+ };
 
 }
 
