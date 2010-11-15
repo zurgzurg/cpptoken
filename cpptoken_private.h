@@ -35,25 +35,29 @@
 
 namespace cpptoken {
 
-enum tokType {
-  DOT,
-  STAR,
-  QMARK,
-  LB,
-  RB,
-  PIPE,
-  num_tokType      /* not an actual type */
-};
+  enum tokType {
+    DOT,
+    STAR,
+    QMARK,
+    LB,
+    RB,
+    PIPE,
+    num_tokType      /* not an actual type */
+  };
 
- class REToken {
+ struct REToken {
    tokType ttype;
  };
   
- class RETokenizer {
- public:
-   static list<REToken *> *tokenize(const char *);
-   static list<REToken *> *tokenize(const char *, size_t start, size_t n);
-   static void freeTokList(list<REToken *> *);
+ struct TokenList {
+   list<REToken *>  toks;
+
+   TokenList(const char *);
+   TokenList(const char *, size_t idx, size_t len);
+   ~TokenList();
+
+ private:
+   void build(const char *, size_t idx, size_t len);
  };
 
 }

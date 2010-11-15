@@ -206,7 +206,7 @@ struct TC_Basic02 : public TestCase {
 void
 TC_Basic02::run()
 {
-  list<REToken *> *toks = RETokenizer::tokenize("");
+  TokenList *toks = new TokenList("");
   delete toks;
   this->setPass();
 }
@@ -224,6 +224,22 @@ make_basic_suite()
   s->addTestCase(new TC_Basic02());
 
   return s;
+}
+
+/****************************************************/
+/****************************************************/
+/* tokenization tests                               */
+/****************************************************/
+/****************************************************/
+struct TC_Tokens01 : public TestCase {
+  TC_Tokens01() : TestCase("TC_Tokens01") {;};
+  void run();
+};
+
+void
+TC_Tokens01::run()
+{
+  this->setPass();
 }
 
 /****************************************************/

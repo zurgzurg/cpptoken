@@ -7,33 +7,37 @@ using namespace std;
 #include "cpptoken_private.h"
 using namespace cpptoken;
 
-list<REToken *> *
-RETokenizer::tokenize(const char *regex)
+TokenList::TokenList(const char *regex)
 {
-  if (regex == NULL)
-    return NULL;
-  size_t idx = 0;
-  size_t l = strlen(regex);
-  list<REToken *> *result = RETokenizer::tokenize(regex, idx, l);
-  return result;
+  this->toks.clear();
+  size_t len = strlen(regex);
+  this->build(regex, 0, len);
 }
 
-list<REToken *> *
-RETokenizer::tokenize(const char *, size_t start, size_t n)
+TokenList::TokenList(const char *regex, size_t start, size_t len)
 {
-  return NULL;
+  this->toks.clear();
+  this->build(regex, start, len);
 }
 
-void
-RETokenizer::freeTokList(list<REToken *> *toks)
+
+TokenList::~TokenList()
 {
-  if (toks) {
+  if (!this->toks.empty()) {
     list<REToken *>::iterator iter;
-    iter = toks->begin();
-    while (iter != toks->end()) {
+    iter = this->toks.begin();
+    while (iter != this->toks.end()) {
       delete *iter;
       iter++;
     }
   }
+  return;
+}
+
+/*******************************************************/
+
+void
+TokenList::build(const char *regex, size_t start, size_t len)
+{
   return;
 }
