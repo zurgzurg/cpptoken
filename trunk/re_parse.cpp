@@ -55,6 +55,12 @@ TokenList::build(const char *regex, size_t start, size_t len)
     case '|':
       this->simpleAddToken(PIPE);
       break;
+    case '(':
+      this->addTokenAndMaybeCcat(LPAREN);
+      break;
+    case ')':
+      this->addTokenAndMaybeCcat(RPAREN, ch);
+      break;
     default:
       this->addTokenAndMaybeCcat(SELF_CHAR, ch);
       break;
@@ -77,16 +83,19 @@ TokenList::simpleAddToken(TokType tp, char ch)
 void
 TokenList::addTokenAndMaybeCcat(TokType tp, char ch)
 {
-  this->maybeAddCcat();
+  this->maybeAddCcat(tp);
   REToken *tok = new REToken(tp, ch);
   this->toks.push_back(tok);
   return;
 }
 
 void
-TokenList::maybeAddCcat()
+TokenList::maybeAddCcat(TokType cur_tp)
 {
   if (this->toks.empty())
+    return;
+
+  if (cur_tp == LPAREN || cur_tp == RPAREN)
     return;
 
   TokIter iter = this->toks.end();
@@ -124,4 +133,27 @@ TokenList::equals(TokIter iter, TokType tp, char ch)
   }
 
   return true;
+}
+
+void
+TokenList::beginIteration()
+{
+  this->iter = this->toks.begin();
+}
+
+bool
+TokenList::verifyNext(TokType tp, char ch)
+{
+  bool result = this->equals(this->iter, tp, ch);
+  if (this->iter != this->toks.end())
+    this->iter++;
+  return result;
+}
+
+bool
+TokenList::verifyEnd()
+{
+  if (this->iter == this->toks.end())
+    return true;
+  return false;
 }
