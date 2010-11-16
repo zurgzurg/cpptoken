@@ -45,8 +45,10 @@ enum TokType {
   DOT,
 
   QMARK,
-  LB,
-  RB,
+  LBRACE,
+  RBRACE,
+  LPAREN,
+  RPAREN,
   num_tokType      /* not an actual type */
 };
 
@@ -57,22 +59,28 @@ struct REToken {
   REToken(TokType tt, char c='\0') : ttype(tt), ch(c) {;};
 };
   
- struct TokenList {
-   list<REToken *>  toks;
-   typedef list<REToken *>::iterator TokIter;
+struct TokenList {
+  list<REToken *>  toks;
+  typedef list<REToken *>::iterator TokIter;
 
-   TokenList(const char *);
-   TokenList(const char *, size_t idx, size_t len);
-   ~TokenList();
+  TokIter iter;
 
-   bool equals(TokIter, TokType, char = '\0');
+  TokenList(const char *);
+  TokenList(const char *, size_t idx, size_t len);
+  ~TokenList();
 
- private:
-   void build(const char *, size_t idx, size_t len);
-   void simpleAddToken(TokType, char = '\0');
-   void addTokenAndMaybeCcat(TokType, char = '\0');
-   void maybeAddCcat();
- };
+  bool equals(TokIter, TokType, char = '\0');
+
+  void beginIteration();
+  bool verifyNext(TokType, char = '\0');
+  bool verifyEnd();
+
+private:
+  void build(const char *, size_t idx, size_t len);
+  void simpleAddToken(TokType, char = '\0');
+  void addTokenAndMaybeCcat(TokType, char = '\0');
+  void maybeAddCcat(TokType);
+};
 
 }
 
