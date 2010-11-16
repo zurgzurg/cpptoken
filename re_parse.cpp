@@ -42,20 +42,65 @@ TokenList::build(const char *regex, size_t start, size_t len)
 {
   const char *ptr, *last_valid;
   char ch;
-  REToken *tok;
   
   ptr = regex + start;
   last_valid = regex + start + len - 1;
   while (ptr <= last_valid) {
     ch = *ptr;
     
-    tok = new REToken;
-    tok->ttype = SELF_CHAR;
-    tok->ch = ch;
-
-    this->toks.push_back(tok);
+    switch (ch) {
+    case '*':
+      this->simpleAddToken(STAR);
+      break;
+    case '|':
+      this->simpleAddToken(PIPE);
+      break;
+    default:
+      this->addTokenAndMaybeCcat(SELF_CHAR, ch);
+      break;
+    }
 
     ptr++;
+  }
+
+  return;
+}
+
+void
+TokenList::simpleAddToken(TokType tp, char ch)
+{
+  REToken *tok = new REToken(tp, ch);
+  this->toks.push_back(tok);
+  return;
+}
+
+void
+TokenList::addTokenAndMaybeCcat(TokType tp, char ch)
+{
+  this->maybeAddCcat();
+  REToken *tok = new REToken(tp, ch);
+  this->toks.push_back(tok);
+  return;
+}
+
+void
+TokenList::maybeAddCcat()
+{
+  if (this->toks.empty())
+    return;
+
+  TokIter iter = this->toks.end();
+  iter--;
+
+  REToken *tok = *iter;
+
+  switch (tok->ttype) {
+  case SELF_CHAR:
+    tok = new REToken(CCAT);
+    this->toks.push_back(tok);
+    break;
+  default:
+    break;
   }
 
   return;

@@ -35,21 +35,27 @@
 
 namespace cpptoken {
 
-  enum TokType {
-    SELF_CHAR,
-    DOT,
-    STAR,
-    QMARK,
-    LB,
-    RB,
-    PIPE,
-    num_tokType      /* not an actual type */
-  };
+enum TokType {
+  SELF_CHAR,
 
- struct REToken {
-   TokType ttype;
-   char ch;
- };
+  CCAT,
+  PIPE,
+  STAR,
+
+  DOT,
+
+  QMARK,
+  LB,
+  RB,
+  num_tokType      /* not an actual type */
+};
+
+struct REToken {
+  TokType ttype;
+  char ch;
+
+  REToken(TokType tt, char c='\0') : ttype(tt), ch(c) {;};
+};
   
  struct TokenList {
    list<REToken *>  toks;
@@ -59,10 +65,13 @@ namespace cpptoken {
    TokenList(const char *, size_t idx, size_t len);
    ~TokenList();
 
-   bool equals(TokIter, TokType, char);
+   bool equals(TokIter, TokType, char = '\0');
 
  private:
    void build(const char *, size_t idx, size_t len);
+   void simpleAddToken(TokType, char = '\0');
+   void addTokenAndMaybeCcat(TokType, char = '\0');
+   void maybeAddCcat();
  };
 
 }
