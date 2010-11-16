@@ -1,3 +1,5 @@
+#include <stdarg.h>
+
 #include <list>
 #include <string>
 #include <sstream>
@@ -211,21 +213,6 @@ TC_Basic02::run()
   this->setPass();
 }
 
-/*************/
-
-TestSuite *
-make_basic_suite()
-{
-  TestSuite *s;
-
-  s = new TestSuite();
-
-  s->addTestCase(new TC_Basic01());
-  s->addTestCase(new TC_Basic02());
-
-  return s;
-}
-
 /****************************************************/
 /****************************************************/
 /* tokenization tests                               */
@@ -242,13 +229,43 @@ TC_Tokens01::run()
   this->setPass();
 }
 
+struct TC_Tokens02 : public TestCase {
+  TC_Tokens02() : TestCase("TC_Tokens02") {;};
+  void run();
+};
+
+void
+TC_Tokens02::run()
+{
+  TokenList tlist("a");
+  TokenList::TokIter iter = tlist.toks.begin();
+
+  this->assertTrue(tlist.equals(iter, SELF_CHAR, 'a'));
+  this->setPass();
+}
+
 /****************************************************/
 /* top level                                        */
 /****************************************************/
+static TestSuite *
+make_suite_all_tests()
+{
+  TestSuite *s;
+
+  s = new TestSuite();
+
+  s->addTestCase(new TC_Basic01());
+  s->addTestCase(new TC_Basic02());
+  s->addTestCase(new TC_Tokens01());
+  s->addTestCase(new TC_Tokens02());
+
+  return s;
+}
+
 int
 main(int argc, const char **argv)
 {
-  TestSuite *s = make_basic_suite();
+  TestSuite *s = make_suite_all_tests();
   TestResult result;
 
   s->run(&result);
