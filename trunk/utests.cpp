@@ -52,7 +52,14 @@ public:
   size_t n_exceptions;
   size_t n_asserts;
 
-  TestResult() : n_run(0), n_pass(0), n_exceptions(0), n_asserts(0) {;};
+  list<string> tests_e;
+  list<string> tests_f;
+
+  TestResult() : n_run(0),
+		 n_pass(0),
+		 n_fail(0),
+		 n_exceptions(0),
+		 n_asserts(0) {;};
 
   void report();
 };
@@ -62,9 +69,19 @@ TestResult::report()
 {
   cout << "num_run=" << this->n_run
        << " num_pass=" << this->n_pass
+       << " num_fail=" << this->n_fail
        << " num_exceptions=" << this->n_exceptions
        << " num_asserts=" << this->n_asserts
        << "\n";
+  if (!this->tests_e.empty()) {
+    list<string>::iterator iter = this->tests_e.begin();
+    cout << "Tests failing with exceptions\n";
+    while (iter != this->tests_e.end()) {
+      cout << "    " << *iter << "\n";
+      iter++;
+    }
+  }
+
   return;
 }
 
@@ -72,6 +89,8 @@ TestResult::report()
 struct TestCase {
   TestResult *result;
   string name;
+  bool isPass;
+  bool statusSet;
 
   virtual void setup();
   virtual void run();
@@ -79,33 +98,34 @@ struct TestCase {
 
   TestCase(const char *nm) : result(NULL), name(nm) {;};
 
-  void assertTrue(bool);
-  void setPass();
-  void setFail();
+  void assertTrue(bool, const char *file, int line);
+  void setStatus(bool);
 };
 
+#define ASSERT_TRUE(c) this->assertTrue(c, __FILE__, __LINE__)
+
 void
-TestCase::assertTrue(bool c)
+TestCase::assertTrue(bool c, const char *fname, int line)
 {
   if (this->result)
     this->result->n_asserts++;
   if (c == true)
     return;
-  throw TestFailure(__FILE__,__LINE__);
+  throw TestFailure(fname, line);
 }
 
 void
-TestCase::setPass()
+TestCase::setStatus(bool s)
 {
-  if (this->result)
-    this->result->n_pass++;
-}
-
-void
-TestCase::setFail()
-{
-  if (this->result)
-    this->result->n_fail++;
+  this->statusSet = true;
+  this->isPass = s;
+  if (this->result) {
+    if (s == true)
+      this->result->n_pass++;
+    else
+      this->result->n_fail++;
+  }
+  return;
 }
 
 void
@@ -161,12 +181,17 @@ TestSuite::run(TestResult *result)
     tc->result = result;
     try {
       tc->setup();
-      tc->run();
-      tc->teardown();
 
       result->n_run++;
+      tc->statusSet = false;
+      tc->run();
+
+      if (tc->statusSet == false)
+	result->n_fail++;
+
     }
     catch (TestFailure e) {
+      result->tests_e.push_back( tc->name + e.what() );
       result->n_exceptions++;
     }
 
@@ -196,8 +221,8 @@ struct TC_Basic01 : public TestCase {
 void
 TC_Basic01::run()
 {
-  this->assertTrue(true);
-  this->setPass();
+  ASSERT_TRUE(true);
+  this->setStatus(true);
 }
 
 struct TC_Basic02 : public TestCase {
@@ -210,7 +235,7 @@ TC_Basic02::run()
 {
   TokenList *toks = new TokenList("");
   delete toks;
-  this->setPass();
+  this->setStatus(true);
 }
 
 /****************************************************/
@@ -226,7 +251,7 @@ struct TC_Tokens01 : public TestCase {
 void
 TC_Tokens01::run()
 {
-  this->setPass();
+  this->setStatus(true);
 }
 
 struct TC_Tokens02 : public TestCase {
@@ -240,8 +265,53 @@ TC_Tokens02::run()
   TokenList tlist("a");
   TokenList::TokIter iter = tlist.toks.begin();
 
-  this->assertTrue(tlist.equals(iter, SELF_CHAR, 'a'));
-  this->setPass();
+  ASSERT_TRUE(tlist.equals(iter, SELF_CHAR, 'a'));
+  this->setStatus(true);
+}
+
+struct TC_Tokens03 : public TestCase {
+  TC_Tokens03() : TestCase("TC_Tokens03") {;};
+  void run();
+};
+
+void
+TC_Tokens03::run()
+{
+  TokenList tlist("a*");
+  TokenList::TokIter iter = tlist.toks.begin();
+
+  ASSERT_TRUE(tlist.equals(iter, SELF_CHAR, 'a'));
+  iter++;
+  ASSERT_TRUE(tlist.equals(iter, STAR));
+  this->setStatus(true);
+}
+
+struct TC_Tokens04 : public TestCase {
+  TC_Tokens04() : TestCase("TC_Tokens04") {;};
+  void run();
+};
+
+void
+TC_Tokens04::run()
+{
+  TokenList tlist1("a|b");
+  TokenList::TokIter iter = tlist1.toks.begin();
+
+  ASSERT_TRUE(tlist1.equals(iter, SELF_CHAR, 'a'));
+  iter++;
+  ASSERT_TRUE(tlist1.equals(iter, PIPE));
+  iter++;
+  ASSERT_TRUE(tlist1.equals(iter, SELF_CHAR, 'b'));
+
+  TokenList tlist2("ab");
+  iter = tlist2.toks.begin();
+  ASSERT_TRUE(tlist2.equals(iter, SELF_CHAR, 'a'));
+  iter++;
+  ASSERT_TRUE(tlist2.equals(iter, CCAT));
+  iter++;
+  ASSERT_TRUE(tlist2.equals(iter, SELF_CHAR, 'b'));
+  
+  this->setStatus(true);
 }
 
 /****************************************************/
@@ -258,6 +328,8 @@ make_suite_all_tests()
   s->addTestCase(new TC_Basic02());
   s->addTestCase(new TC_Tokens01());
   s->addTestCase(new TC_Tokens02());
+  s->addTestCase(new TC_Tokens03());
+  s->addTestCase(new TC_Tokens04());
 
   return s;
 }
