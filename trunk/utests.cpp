@@ -336,6 +336,17 @@ TC_Tokens04::run()
   ASSERT_TRUE(tlist4.verifyNext(RPAREN));
   ASSERT_TRUE(tlist4.verifyEnd());
 
+  TokenList tlist5("[abc]");
+  tlist4.beginIteration();
+  ASSERT_TRUE(tlist4.verifyNext(LPAREN));
+  ASSERT_TRUE(tlist4.verifyNext(SELF_CHAR, 'a'));
+  ASSERT_TRUE(tlist4.verifyNext(PIPE));
+  ASSERT_TRUE(tlist4.verifyNext(SELF_CHAR, 'b'));
+  ASSERT_TRUE(tlist4.verifyNext(PIPE));
+  ASSERT_TRUE(tlist4.verifyNext(SELF_CHAR, 'c'));
+  ASSERT_TRUE(tlist4.verifyNext(RPAREN));
+  ASSERT_TRUE(tlist4.verifyEnd());
+
   this->setStatus(true);
 }
 
