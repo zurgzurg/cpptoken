@@ -35,7 +35,8 @@
 
 namespace cpptoken {
 
-  enum tokType {
+  enum TokType {
+    SELF_CHAR,
     DOT,
     STAR,
     QMARK,
@@ -46,15 +47,19 @@ namespace cpptoken {
   };
 
  struct REToken {
-   tokType ttype;
+   TokType ttype;
+   char ch;
  };
   
  struct TokenList {
    list<REToken *>  toks;
+   typedef list<REToken *>::iterator TokIter;
 
    TokenList(const char *);
    TokenList(const char *, size_t idx, size_t len);
    ~TokenList();
+
+   bool equals(TokIter, TokType, char);
 
  private:
    void build(const char *, size_t idx, size_t len);
