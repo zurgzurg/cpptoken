@@ -49,36 +49,45 @@ enum TokType {
   RBRACE,
   LPAREN,
   RPAREN,
+
+  CHAR_CLASS,
+
   num_tokType      /* not an actual type */
 };
 
+typedef unsigned char uchar;
+
+/********************************/
+
 struct REToken {
   TokType ttype;
-  char ch;
+  uchar ch;
 
-  REToken(TokType tt, char c='\0') : ttype(tt), ch(c) {;};
+  REToken(TokType tt, uchar c='\0') : ttype(tt), ch(c) {;};
 };
   
+/********************************/
+
 struct TokenList {
   list<REToken *>  toks;
-  typedef list<REToken *>::iterator TokIter;
-
-  TokIter iter;
+  list<REToken *>::iterator iter;
 
   TokenList(const char *);
   TokenList(const char *, size_t idx, size_t len);
   ~TokenList();
 
-  bool equals(TokIter, TokType, char = '\0');
+  bool equals(list<REToken *>::iterator, TokType, uchar = '\0');
 
   void beginIteration();
-  bool verifyNext(TokType, char = '\0');
+  bool verifyNext(TokType, uchar = '\0');
   bool verifyEnd();
 
 private:
   void build(const char *, size_t idx, size_t len);
-  void simpleAddToken(TokType, char = '\0');
-  void addTokenAndMaybeCcat(TokType, char = '\0');
+  void addRange(bool invert, const list<uchar> &);
+  void computeInverseRange(list<uchar> &result, const list<uchar> &src);
+  void simpleAddToken(TokType, uchar = '\0');
+  void addTokenAndMaybeCcat(TokType, uchar = '\0');
   void maybeAddCcat(TokType);
 };
 
