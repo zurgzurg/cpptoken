@@ -38,11 +38,16 @@ namespace cpptoken {
 class Buffer {
  private:
   
+ public:
+  Buffer();
 };
 
 class Lexer {
  private:
+
  public:
+  Lexer();
+
  private:
 };
 
