@@ -1,4 +1,5 @@
 check_PROGRAMS = utests
+TESTS = utests
 
 lib_LIBRARIES = libcpptoken.a
 libcpptoken_a_SOURCES = cpptoken.cpp re_parse.cpp cpptoken_private.h ../include/cpptoken.h
@@ -11,3 +12,4 @@ libcpptoken_la_CXXFLAGS = -I$(top_srcdir)/include
 utests_SOURCES = utests.cpp
 utests_CXXFLAGS = -I$(top_srcdir)/include
 utests_LDADD = -lcpptoken
+
