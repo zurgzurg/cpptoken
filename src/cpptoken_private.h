@@ -60,17 +60,18 @@ typedef unsigned char uchar;
 /********************************/
 
 struct REToken {
-  TokType ttype;
-  uchar ch;
+  TokType m_ttype;
+  uchar m_ch;
+  list<uchar> *m_charClass;
 
-  REToken(TokType tt, uchar c='\0') : ttype(tt), ch(c) {;};
+  REToken(TokType tt, uchar c='\0') : m_ttype(tt), m_ch(c), m_charClass() {;};
 };
   
 /********************************/
 
 struct TokenList {
-  list<REToken *>  toks;
-  list<REToken *>::iterator iter;
+  list<REToken *>  m_toks;
+  list<REToken *>::iterator m_iter;
 
   TokenList(const char *);
   TokenList(const char *, size_t idx, size_t len);
