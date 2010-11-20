@@ -343,20 +343,14 @@ TC_Tokens04::run()
     ASSERT_TRUE(tlist.verifyEnd());
   }
 
-#if 0
   {
     TokenList tlist("[abc]");
     tlist.beginIteration();
-    ASSERT_TRUE(tlist.verifyNext(LPAREN));
-    ASSERT_TRUE(tlist.verifyNext(SELF_CHAR, 'a'));
-    ASSERT_TRUE(tlist.verifyNext(PIPE));
-    ASSERT_TRUE(tlist.verifyNext(SELF_CHAR, 'b'));
-    ASSERT_TRUE(tlist.verifyNext(PIPE));
-    ASSERT_TRUE(tlist.verifyNext(SELF_CHAR, 'c'));
-    ASSERT_TRUE(tlist.verifyNext(RPAREN));
+    ASSERT_TRUE(tlist.verifyNextCharClass("abc", 3));
     ASSERT_TRUE(tlist.verifyEnd());
   }
 
+#if 0
   {
     TokenList tlist("[a-c]");
     tlist.beginIteration();
@@ -404,5 +398,10 @@ main(int argc, const char **argv)
   result.report();
   delete s;
 
-  return 0;
+  if (result.n_run == result.n_pass
+      && result.n_fail == 0
+      && result.n_exceptions == 0)
+    return 0;
+  
+  return 1;
 }
