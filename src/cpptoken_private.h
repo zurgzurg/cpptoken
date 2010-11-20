@@ -64,7 +64,10 @@ struct REToken {
   uchar m_ch;
   list<uchar> *m_charClass;
 
-  REToken(TokType tt, uchar c='\0') : m_ttype(tt), m_ch(c), m_charClass() {;};
+  REToken(TokType tt, uchar c='\0')
+  : m_ttype(tt),
+    m_ch(c),
+    m_charClass(NULL) {;};
 };
   
 /********************************/
@@ -81,12 +84,13 @@ struct TokenList {
 
   void beginIteration();
   bool verifyNext(TokType, uchar = '\0');
+  bool verifyNextCharClass(const char *exp, size_t n_exp);
   bool verifyEnd();
 
 private:
   void build(const char *, size_t idx, size_t len);
-  void addRange(bool invert, const list<uchar> &);
-  void computeInverseRange(list<uchar> &result, const list<uchar> &src);
+  void addRange(bool invert, list<uchar> *);
+  list<uchar> *computeInverseRange(const list<uchar> *src);
   void simpleAddToken(TokType, uchar = '\0');
   void addTokenAndMaybeCcat(TokType, uchar = '\0');
   void maybeAddCcat(TokType);
