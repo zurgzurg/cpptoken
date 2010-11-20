@@ -9,24 +9,24 @@ using namespace cpptoken;
 
 TokenList::TokenList(const char *regex)
 {
-  this->toks.clear();
+  this->m_toks.clear();
   size_t len = strlen(regex);
   this->build(regex, 0, len);
 }
 
 TokenList::TokenList(const char *regex, size_t start, size_t len)
 {
-  this->toks.clear();
+  this->m_toks.clear();
   this->build(regex, start, len);
 }
 
 
 TokenList::~TokenList()
 {
-  if (!this->toks.empty()) {
+  if (!this->m_toks.empty()) {
     list<REToken *>::iterator iter;
-    iter = this->toks.begin();
-    while (iter != this->toks.end()) {
+    iter = this->m_toks.begin();
+    while (iter != this->m_toks.end()) {
       delete *iter;
       iter++;
     }
@@ -138,7 +138,7 @@ void
 TokenList::simpleAddToken(TokType tp, uchar ch)
 {
   REToken *tok = new REToken(tp, ch);
-  this->toks.push_back(tok);
+  this->m_toks.push_back(tok);
   return;
 }
 
@@ -147,28 +147,28 @@ TokenList::addTokenAndMaybeCcat(TokType tp, uchar ch)
 {
   this->maybeAddCcat(tp);
   REToken *tok = new REToken(tp, ch);
-  this->toks.push_back(tok);
+  this->m_toks.push_back(tok);
   return;
 }
 
 void
 TokenList::maybeAddCcat(TokType cur_tp)
 {
-  if (this->toks.empty())
+  if (this->m_toks.empty())
     return;
 
   if (cur_tp == LPAREN || cur_tp == RPAREN)
     return;
 
-  list<REToken *>::iterator iter = this->toks.end();
+  list<REToken *>::iterator iter = this->m_toks.end();
   iter--;
 
   REToken *tok = *iter;
 
-  switch (tok->ttype) {
+  switch (tok->m_ttype) {
   case SELF_CHAR:
     tok = new REToken(CCAT);
-    this->toks.push_back(tok);
+    this->m_toks.push_back(tok);
     break;
   default:
     break;
@@ -183,14 +183,14 @@ TokenList::equals(list<REToken *>::iterator iter, TokType tp, uchar ch)
 {
   REToken *ptr;
 
-  if (iter == this->toks.end())
+  if (iter == this->m_toks.end())
     return false;
 
   ptr = *iter;
-  if (ptr->ttype != tp)
+  if (ptr->m_ttype != tp)
     return false;
   if (tp == SELF_CHAR) {
-    if (ptr->ch != ch)
+    if (ptr->m_ch != ch)
       return false;
   }
 
@@ -200,22 +200,22 @@ TokenList::equals(list<REToken *>::iterator iter, TokType tp, uchar ch)
 void
 TokenList::beginIteration()
 {
-  this->iter = this->toks.begin();
+  this->m_iter = this->m_toks.begin();
 }
 
 bool
 TokenList::verifyNext(TokType tp, uchar ch)
 {
-  bool result = this->equals(this->iter, tp, ch);
-  if (this->iter != this->toks.end())
-    this->iter++;
+  bool result = this->equals(this->m_iter, tp, ch);
+  if (this->m_iter != this->m_toks.end())
+    this->m_iter++;
   return result;
 }
 
 bool
 TokenList::verifyEnd()
 {
-  if (this->iter == this->toks.end())
+  if (this->m_iter == this->m_toks.end())
     return true;
   return false;
 }
