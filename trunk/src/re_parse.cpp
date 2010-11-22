@@ -294,6 +294,23 @@ TokenList::verifyCharClassLength(size_t exp)
   return true;
 }
 
+bool
+TokenList::verifyCharClassMember(uchar exp)
+{
+  if (this->m_iter == this->m_toks.end())
+    return false;
+  REToken *tok = *this->m_iter;
+  if (tok->m_ttype != CHAR_CLASS)
+    return false;
+  list<uchar>::iterator iter = tok->m_charClass->begin();
+  while (iter != tok->m_charClass->end()) {
+    if (*iter == exp)
+      return true;
+    ++iter;
+  }
+  return false;
+}
+
 void
 TokenList::beginIteration()
 {
