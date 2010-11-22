@@ -65,10 +65,62 @@ TokenList::build(const char *regex, size_t start, size_t len)
       {
 	list<uchar> *tmp = new list<uchar>;
 	uchar prev, cur;
+	int state;
 
 	ptr++;
 
-	prev = *ptr++;
+	state = 0;
+	while (ptr <= last_valid) {
+	  cur = *ptr;
+
+	  if (state == 0) {
+	    /* zero state - go nothing */
+	    if (cur == '-') {
+	      tmp->push_back(cur);
+	      ptr++;
+	    }
+	    else if (cur == ']') {
+	      ptr++;
+	      break;
+	    }
+	    else {
+	      state = 1;
+	      prev = cur;
+	      ptr++;
+	    }
+	    continue;
+	  }
+
+	  else if (state == 1) {
+	    /* got a previous char - maybe the start of a range x-y */
+	    if (cur == '-') {
+	      state = 2;
+	      ptr++;
+	    }
+	    else if (cur == ']') {
+	      tmp->push_back(prev);
+	      ptr++;
+	      break;
+	    }
+	    else {
+	      tmp->push_back(prev);
+	      ptr++;
+	      prev = cur;
+	    }
+	    continue;
+	  }
+
+	  else if (state == 2) {
+	    /* got a real range */
+	    this->addToCharClass(tmp, prev, cur);
+	    ptr++;
+	    state = 0;
+	  }
+	}
+
+
+#if 0
+	cur = *ptr++;
 	while (ptr <= last_valid) {
 	  cur = *ptr;
 
@@ -89,9 +141,11 @@ TokenList::build(const char *regex, size_t start, size_t len)
 	  prev = cur;
 	  ptr++;
 	}
+#endif
 
 	this->addRange(false, tmp);
       }
+
       break;
 
 
