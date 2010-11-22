@@ -402,6 +402,13 @@ TC_Tokens04::run()
     ASSERT_TRUE(tlist.verifyEnd());
   }
 
+  {
+    TokenList tlist("[a-cx-]");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNextCharClass("abcx-", 5));
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
   this->setStatus(true);
 }
 
