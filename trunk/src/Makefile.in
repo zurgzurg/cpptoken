@@ -15,6 +15,7 @@
 
 @SET_MAKE@
 
+
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
@@ -32,7 +33,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-check_PROGRAMS = utests$(EXEEXT)
+noinst_PROGRAMS = utests$(EXEEXT)
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/config.h.in
@@ -74,9 +75,9 @@ libcpptoken_a_LIBADD =
 am_libcpptoken_a_OBJECTS = libcpptoken_a-cpptoken.$(OBJEXT) \
 	libcpptoken_a-re_parse.$(OBJEXT)
 libcpptoken_a_OBJECTS = $(am_libcpptoken_a_OBJECTS)
+PROGRAMS = $(noinst_PROGRAMS)
 am_utests_OBJECTS = utests-utests.$(OBJEXT)
 utests_OBJECTS = $(am_utests_OBJECTS)
-utests_DEPENDENCIES =
 utests_LINK = $(CXXLD) $(utests_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.@am__isrc@
@@ -197,6 +198,7 @@ libcpptoken_a_CXXFLAGS = -I$(top_srcdir)/include
 utests_SOURCES = utests.cpp libcpptoken.a
 utests_CXXFLAGS = -I$(top_srcdir)/include
 utests_LDADD = -L. -lcpptoken
+utests_DEPENDENCIES = libcpptoken.a
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -286,8 +288,8 @@ libcpptoken.a: $(libcpptoken_a_OBJECTS) $(libcpptoken_a_DEPENDENCIES)
 	$(libcpptoken_a_AR) libcpptoken.a $(libcpptoken_a_OBJECTS) $(libcpptoken_a_LIBADD)
 	$(RANLIB) libcpptoken.a
 
-clean-checkPROGRAMS:
-	-test -z "$(check_PROGRAMS)" || rm -f $(check_PROGRAMS)
+clean-noinstPROGRAMS:
+	-test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
 utests$(EXEEXT): $(utests_OBJECTS) $(utests_DEPENDENCIES) 
 	@rm -f utests$(EXEEXT)
 	$(utests_LINK) $(utests_OBJECTS) $(utests_LDADD) $(LIBS)
@@ -533,10 +535,9 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
-	$(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS)
 	$(MAKE) $(AM_MAKEFLAGS) check-TESTS
 check: check-am
-all-am: Makefile $(LIBRARIES) config.h
+all-am: Makefile $(LIBRARIES) $(PROGRAMS) config.h
 installdirs:
 	for dir in "$(DESTDIR)$(libdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
@@ -568,7 +569,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-checkPROGRAMS clean-generic clean-libLIBRARIES \
+clean-am: clean-generic clean-libLIBRARIES clean-noinstPROGRAMS \
 	mostlyclean-am
 
 distclean: distclean-am
@@ -639,7 +640,7 @@ uninstall-am: uninstall-libLIBRARIES
 .MAKE: all check-am install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am check check-TESTS check-am clean \
-	clean-checkPROGRAMS clean-generic clean-libLIBRARIES ctags \
+	clean-generic clean-libLIBRARIES clean-noinstPROGRAMS ctags \
 	distclean distclean-compile distclean-generic distclean-hdr \
 	distclean-tags distdir dvi dvi-am html html-am info info-am \
 	install install-am install-data install-data-am install-dvi \
