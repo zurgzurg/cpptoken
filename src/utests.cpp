@@ -438,9 +438,17 @@ TC_Tokens05::run()
     ASSERT_TRUE(tlist.verifyEnd());
   }
 
+  {
+    TokenList tlist("[^abc]");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyCharClassMember('z'));
+    ASSERT_TRUE( ! tlist.verifyCharClassMember('a'));
+    tlist.incrementIterator();
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
   this->setStatus(true);
 }
-
 
 /****************************************************/
 /* top level                                        */
