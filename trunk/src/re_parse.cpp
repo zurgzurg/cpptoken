@@ -111,37 +111,21 @@ TokenList::build(const char *regex, size_t start, size_t len)
 	  }
 
 	  else if (state == 2) {
-	    /* got a real range */
-	    this->addToCharClass(tmp, prev, cur);
-	    ptr++;
-	    state = 0;
-	  }
-	}
-
-
-#if 0
-	cur = *ptr++;
-	while (ptr <= last_valid) {
-	  cur = *ptr;
-
-	  if (cur == ']') {
-	    tmp->push_back(prev);
-	    ptr++;
-	    break;
-	  }
-
-	  if (cur == '-') {
-	    ptr++;
-	    cur = *ptr++;
-	    this->addToCharClass(tmp, prev, cur);
+	    /* maybe got a real range */
+	    if (cur == ']') {
+	      tmp->push_back(prev);
+	      tmp->push_back('-');
+	      ptr++;
+	      break;
+	    }
+	    else {
+	      this->addToCharClass(tmp, prev, cur);
+	      ptr++;
+	      state = 0;
+	    }
 	    continue;
 	  }
-
-	  tmp->push_back(prev);
-	  prev = cur;
-	  ptr++;
 	}
-#endif
 
 	this->addRange(false, tmp);
       }
