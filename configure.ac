@@ -3,9 +3,18 @@ AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src/re_parse.cpp])
 AC_CONFIG_FILES([Makefile src/Makefile include/Makefile])
 
-AC_PROG_LIBTOOL
-AC_PROG_CXX
 AC_PROG_INSTALL
+AC_PROG_RANLIB
+
+AC_PROG_CXXCPP
+AC_PROG_CXX
+
+AC_LANG([C++])
+
+CXXFLAGS="-g -O0"
+
+
+# AC_PROG_LIBTOOL
 
 AC_ARG_ENABLE(
 	[mt-exec],
@@ -22,7 +31,8 @@ if test "x${have_pthreads}" = "xyes"; then
 fi
   
 AC_CONFIG_HEADERS([src/config.h])
-AC_CHECK_HEADERS([unistd.h])
+AC_CHECK_HEADERS([unistd.h cstddef cstring exception list sstream iostream],,
+                 [AC_MSG_ERROR([Required header files missing.])])
 
 AC_OUTPUT
 

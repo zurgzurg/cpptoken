@@ -27,6 +27,8 @@ TokenList::~TokenList()
     list<REToken *>::iterator iter;
     iter = this->m_toks.begin();
     while (iter != this->m_toks.end()) {
+      if ((*iter)->m_ttype == CHAR_CLASS)
+	delete (*iter)->m_charClass;
       delete *iter;
       iter++;
     }
@@ -62,16 +64,38 @@ TokenList::build(const char *regex, size_t start, size_t len)
     case '[':
       {
 	list<uchar> *tmp = new list<uchar>;
+	uchar prev, cur;
 
 	ptr++;
-	while (ptr <= last_valid && *ptr != ']') {
-	  ch = *ptr;
-	  tmp->push_back(ch);
+
+	prev = *ptr++;
+	while (ptr <= last_valid) {
+	  cur = *ptr;
+
+	  if (cur == ']') {
+	    tmp->push_back(prev);
+	    ptr++;
+	    break;
+	  }
+
+	  if (cur == '-') {
+	    ptr++;
+	    cur = *ptr++;
+	    this->addToCharClass(tmp, prev, cur);
+	    continue;
+	  }
+
+	  tmp->push_back(prev);
+	  prev = cur;
 	  ptr++;
 	}
+
 	this->addRange(false, tmp);
       }
       break;
+
+
+
     default:
       this->addTokenAndMaybeCcat(SELF_CHAR, ch);
       break;
@@ -79,6 +103,26 @@ TokenList::build(const char *regex, size_t start, size_t len)
 
     ptr++;
   }
+
+  return;
+}
+
+void
+TokenList::addToCharClass(list<uchar>  *c_class, uchar v1, uchar v2)
+{
+  uchar lim1, lim2, code;
+
+  if (v1 < v2) {
+    lim1 = v1;
+    lim2 = v2;
+  }
+  else {
+    lim1 = v2;
+    lim2 = v1;
+  }
+
+  for (code = lim1; code <= lim2; code++)
+    c_class->push_back(code);
 
   return;
 }

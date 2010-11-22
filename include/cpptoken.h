@@ -35,6 +35,15 @@
 
 namespace cpptoken {
 
+class SyntaxError : public std::exception {
+  private:
+    size_t m_errIdx;
+    const char *m_reason;
+
+  public:
+  SyntaxError(size_t idx, const char *msg) : std::exception(), m_errIdx(idx), m_reason(msg) {;}
+};
+
 class Buffer {
  private:
   
