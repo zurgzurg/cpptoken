@@ -395,14 +395,12 @@ TC_Tokens04::run()
     ASSERT_TRUE(tlist.verifyEnd());
   }
 
-#if 0
   {
     TokenList tlist("[-c]");
     tlist.beginIteration();
-    ASSERT_TRUE(tlist.verifyNextCharClass("-c", 3));
+    ASSERT_TRUE(tlist.verifyNextCharClass("-c", 2));
     ASSERT_TRUE(tlist.verifyEnd());
   }
-#endif
 
   this->setStatus(true);
 }
