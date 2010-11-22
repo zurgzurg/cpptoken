@@ -292,10 +292,14 @@ TC_Tokens01::run()
   this->setStatus(true);
 }
 
+/********************/
+
 struct TC_Tokens02 : public TestCase {
   TC_Tokens02() : TestCase("TC_Tokens02") {;};
   void run();
 };
+
+/********************/
 
 void
 TC_Tokens02::run()
@@ -312,6 +316,8 @@ struct TC_Tokens03 : public TestCase {
   void run();
 };
 
+/********************/
+
 void
 TC_Tokens03::run()
 {
@@ -323,6 +329,8 @@ TC_Tokens03::run()
   ASSERT_TRUE(tlist.equals(iter, STAR));
   this->setStatus(true);
 }
+
+/********************/
 
 struct TC_Tokens04 : public TestCase {
   TC_Tokens04() : TestCase("TC_Tokens04") {;};
@@ -412,6 +420,29 @@ TC_Tokens04::run()
   this->setStatus(true);
 }
 
+/********************/
+
+struct TC_Tokens05 : public TestCase {
+  TC_Tokens05() : TestCase("TC_Tokens05") {;};
+  void run();
+};
+
+void
+TC_Tokens05::run()
+{
+#if 0
+  {
+    TokenList tlist("[^abc]");
+    tlist.beginIteration();
+    ////    ASSERT_TRUE(tlist.verifyNextCharClass("abcx-", 5));
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+#endif
+
+  this->setStatus(true);
+}
+
+
 /****************************************************/
 /* top level                                        */
 /****************************************************/
@@ -424,10 +455,12 @@ make_suite_all_tests()
 
   s->addTestCase(new TC_Basic01());
   s->addTestCase(new TC_Basic02());
+
   s->addTestCase(new TC_Tokens01());
   s->addTestCase(new TC_Tokens02());
   s->addTestCase(new TC_Tokens03());
   s->addTestCase(new TC_Tokens04());
+  s->addTestCase(new TC_Tokens05());
 
   return s;
 }

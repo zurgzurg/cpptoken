@@ -14,7 +14,7 @@ AC_LANG([C++])
 CXXFLAGS="-g -O0"
 
 
-# AC_PROG_LIBTOOL
+AC_PROG_LIBTOOL
 
 AC_ARG_ENABLE(
 	[mt-exec],
