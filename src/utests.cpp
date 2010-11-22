@@ -430,14 +430,13 @@ struct TC_Tokens05 : public TestCase {
 void
 TC_Tokens05::run()
 {
-#if 0
   {
     TokenList tlist("[^abc]");
     tlist.beginIteration();
-    ////    ASSERT_TRUE(tlist.verifyNextCharClass("abcx-", 5));
+    ASSERT_TRUE(tlist.verifyCharClassLength(256 - 3));
+    tlist.incrementIterator();
     ASSERT_TRUE(tlist.verifyEnd());
   }
-#endif
 
   this->setStatus(true);
 }

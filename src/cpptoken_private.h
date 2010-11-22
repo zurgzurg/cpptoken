@@ -82,7 +82,10 @@ struct TokenList {
 
   bool equals(list<REToken *>::iterator, TokType, uchar = '\0');
 
+  bool verifyCharClassLength(size_t);
+
   void beginIteration();
+  void incrementIterator();
   bool verifyNext(TokType, uchar = '\0');
   bool verifyNextCharClass(const char *exp, size_t n_exp);
   bool verifyEnd();

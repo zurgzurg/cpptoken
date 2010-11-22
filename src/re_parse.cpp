@@ -66,8 +66,14 @@ TokenList::build(const char *regex, size_t start, size_t len)
 	list<uchar> *tmp = new list<uchar>;
 	uchar prev, cur;
 	int state;
+	bool is_invert = false;
 
 	ptr++;
+
+	if (*ptr == '^') {
+	  is_invert = true;
+	  ptr++;
+	}
 
 	state = 0;
 	while (ptr <= last_valid) {
@@ -127,7 +133,7 @@ TokenList::build(const char *regex, size_t start, size_t len)
 	  }
 	}
 
-	this->addRange(false, tmp);
+	this->addRange(is_invert, tmp);
       }
 
       break;
@@ -204,7 +210,7 @@ TokenList::computeInverseRange(const list<uchar> *src)
   list<uchar> *result = new list<uchar>;
 
   for (int i = 0; i < 256; i++) {
-    if (buf[i] == 1)
+    if (buf[i] == 0)
       result->push_back( (uchar) i );
   }
 
@@ -274,10 +280,30 @@ TokenList::equals(list<REToken *>::iterator iter, TokType tp, uchar ch)
   return true;
 }
 
+bool
+TokenList::verifyCharClassLength(size_t exp)
+{
+  if (this->m_iter == this->m_toks.end())
+    return false;
+  REToken *tok = *this->m_iter;
+  if (tok->m_ttype != CHAR_CLASS)
+    return false;
+  size_t act = tok->m_charClass->size();
+  if (act != exp)
+    return false;
+  return true;
+}
+
 void
 TokenList::beginIteration()
 {
   this->m_iter = this->m_toks.begin();
+}
+
+void
+TokenList::incrementIterator()
+{
+  this->m_iter++;
 }
 
 bool
