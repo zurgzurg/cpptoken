@@ -1,4 +1,4 @@
-check_PROGRAMS = utests
+noinst_PROGRAMS = utests
 TESTS = utests_script
 
 lib_LIBRARIES = libcpptoken.a
@@ -12,4 +12,4 @@ libcpptoken_a_CXXFLAGS = -I$(top_srcdir)/include
 utests_SOURCES = utests.cpp libcpptoken.a
 utests_CXXFLAGS = -I$(top_srcdir)/include
 utests_LDADD = -L. -lcpptoken
-
+utests_DEPENDENCIES = libcpptoken.a
