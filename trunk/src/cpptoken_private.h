@@ -90,6 +90,7 @@ struct TokenList {
 private:
   void build(const char *, size_t idx, size_t len);
   void addRange(bool invert, list<uchar> *);
+  void addToCharClass(list<uchar>  *, uchar, uchar);
   list<uchar> *computeInverseRange(const list<uchar> *src);
   void simpleAddToken(TokType, uchar = '\0');
   void addTokenAndMaybeCcat(TokType, uchar = '\0');

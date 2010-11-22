@@ -91,15 +91,24 @@ struct TestCase {
   string name;
   bool isPass;
   bool statusSet;
+  size_t m_refCount;
 
   virtual void setup();
   virtual void run();
   virtual void teardown();
 
-  TestCase(const char *nm) : result(NULL), name(nm) {;};
+  TestCase(const char *nm)
+    : result(NULL),
+      name(nm),
+      isPass(false),
+      statusSet(false),
+      m_refCount(1)
+  {;};
 
   void assertTrue(bool, const char *file, int line);
   void setStatus(bool);
+  TestCase *makeReference();
+  void releaseReference();
 };
 
 #define ASSERT_TRUE(c) this->assertTrue(c, __FILE__, __LINE__)
@@ -126,6 +135,35 @@ TestCase::setStatus(bool s)
       this->result->n_fail++;
   }
   return;
+}
+
+TestCase *
+TestCase::makeReference()
+{
+  this->m_refCount++;
+#if 0
+  cout << "make ref for "
+       << this->name
+       << "count="
+       << this->m_refCount
+       << "\n";
+#endif
+  return this;
+}
+
+void
+TestCase::releaseReference()
+{
+  this->m_refCount--;
+#if 0
+  cout << "release ref for "
+       << this->name
+       << "count="
+       << this->m_refCount
+       << "\n";
+#endif
+  if (this->m_refCount == 0)
+    delete this;
 }
 
 void
@@ -162,7 +200,7 @@ TestSuite::~TestSuite()
   iter = this->tests.begin();
   while (iter != this->tests.end()) {
     TestCase *tc = *iter;
-    delete tc;
+    tc->releaseReference();
     iter++;
   }
 }
@@ -350,20 +388,12 @@ TC_Tokens04::run()
     ASSERT_TRUE(tlist.verifyEnd());
   }
 
-#if 0
   {
     TokenList tlist("[a-c]");
     tlist.beginIteration();
-    ASSERT_TRUE(tlist.verifyNext(LPAREN));
-    ASSERT_TRUE(tlist.verifyNext(SELF_CHAR, 'a'));
-    ASSERT_TRUE(tlist.verifyNext(PIPE));
-    ASSERT_TRUE(tlist.verifyNext(SELF_CHAR, 'b'));
-    ASSERT_TRUE(tlist.verifyNext(PIPE));
-    ASSERT_TRUE(tlist.verifyNext(SELF_CHAR, 'c'));
-    ASSERT_TRUE(tlist.verifyNext(RPAREN));
+    ASSERT_TRUE(tlist.verifyNextCharClass("abc", 3));
     ASSERT_TRUE(tlist.verifyEnd());
   }
-#endif
 
   this->setStatus(true);
 }
@@ -388,15 +418,47 @@ make_suite_all_tests()
   return s;
 }
 
+static TestSuite *
+get_named_tests(TestSuite *all, int argc, const char **argv)
+{
+  TestSuite *s2 = new TestSuite;
+
+  list<TestCase *>::iterator iter = all->tests.begin();
+  while (iter != all->tests.end()) {
+    for (int i = 1; i < argc; i++) {
+      TestCase *tc = *iter;
+      if (tc->name.compare(argv[i]) == 0) {
+	TestCase *tc2 = tc->makeReference();
+	s2->addTestCase(tc2);
+      }
+    }
+    iter++;
+  }
+
+  return s2;
+}
+
 int
 main(int argc, const char **argv)
 {
-  TestSuite *s = make_suite_all_tests();
-  TestResult result;
+  TestSuite *all = make_suite_all_tests();
+  TestSuite *to_run = NULL;
+  
+  if (argc != 1) {
+    to_run = get_named_tests(all, argc, argv);
+    delete all;
+    all = NULL;
+  }
+  else {
+    to_run = all;
+    all = NULL;
+  }
 
-  s->run(&result);
+  TestResult result;
+  to_run->run(&result);
+
   result.report();
-  delete s;
+  delete to_run;
 
   if (result.n_run == result.n_pass
       && result.n_fail == 0
