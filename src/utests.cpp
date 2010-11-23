@@ -469,6 +469,96 @@ TC_Tokens06::run()
     ASSERT_TRUE(tlist.verifyEnd());
   }
 
+  {
+    TokenList tlist("a{10,20}");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
+    ASSERT_TRUE(tlist.verifyNextQuantifier(true, 10, true, 20));
+    tlist.incrementIterator();
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  {
+    TokenList tlist("a{ 10,20}");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
+    ASSERT_TRUE(tlist.verifyNextQuantifier(true, 10, true, 20));
+    tlist.incrementIterator();
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  {
+    TokenList tlist("a{ 10 , 20}");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
+    ASSERT_TRUE(tlist.verifyNextQuantifier(true, 10, true, 20));
+    tlist.incrementIterator();
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  {
+    TokenList tlist("a{ 2 , 3 }");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
+    ASSERT_TRUE(tlist.verifyNextQuantifier(true, 2, true, 3));
+    tlist.incrementIterator();
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  {
+    TokenList tlist("a{2,}");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
+    ASSERT_TRUE(tlist.verifyNextQuantifier(true, 2, false, 0));
+    tlist.incrementIterator();
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  {
+    TokenList tlist("a{ 23 ,}");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
+    ASSERT_TRUE(tlist.verifyNextQuantifier(true, 23, false, 0));
+    tlist.incrementIterator();
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  {
+    TokenList tlist("a{2}");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
+    ASSERT_TRUE(tlist.verifyNextQuantifier(true, 2, false, 0));
+    tlist.incrementIterator();
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  {
+    TokenList tlist("a{ 2 }");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
+    ASSERT_TRUE(tlist.verifyNextQuantifier(true, 2, false, 0));
+    tlist.incrementIterator();
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  {
+    TokenList tlist("a{ 22 }");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
+    ASSERT_TRUE(tlist.verifyNextQuantifier(true, 22, false, 0));
+    tlist.incrementIterator();
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  {
+    TokenList tlist("a{,3}");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
+    ASSERT_TRUE(tlist.verifyNextQuantifier(false, 0, true, 3));
+    tlist.incrementIterator();
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
   this->setStatus(true);
 }
 
