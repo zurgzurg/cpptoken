@@ -1,5 +1,5 @@
 noinst_PROGRAMS = utests
-TESTS = utests_script
+TESTS = utests
 
 lib_LTLIBRARIES = libcpptoken.la
 libcpptoken_la_SOURCES = cpptoken.cpp re_parse.cpp cpptoken_private.h
