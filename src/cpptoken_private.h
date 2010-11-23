@@ -36,38 +36,45 @@
 namespace cpptoken {
 
 enum TokType {
-  SELF_CHAR,
+  TT_SELF_CHAR,
 
-  CCAT,
-  PIPE,
-  STAR,
+  TT_CCAT,
+  TT_PIPE,
+  TT_STAR,
 
-  DOT,
+  TT_DOT,
 
-  QMARK,
-  LBRACE,
-  RBRACE,
-  LPAREN,
-  RPAREN,
+  TT_QMARK,
+  TT_LBRACE,
+  TT_RBRACE,
+  TT_LPAREN,
+  TT_RPAREN,
 
-  CHAR_CLASS,
+  TT_CHAR_CLASS,
+  TT_QUANTIFIER,
 
-  num_tokType      /* not an actual type */
+  TT_num      /* not an actual type */
 };
 
 typedef unsigned char uchar;
 
 /********************************/
+struct RETokQuantifier {
+  bool m_v1Valid;
+  bool m_v2Valid;
+  size_t m_v1;
+  size_t m_v2;
+};
 
 struct REToken {
   TokType m_ttype;
-  uchar m_ch;
-  list<uchar> *m_charClass;
+  union {
+    uchar m_ch;
+    list<uchar> *m_charClass;
+    RETokQuantifier quant;
+  } u;
 
-  REToken(TokType tt, uchar c='\0')
-  : m_ttype(tt),
-    m_ch(c),
-    m_charClass(NULL) {;};
+  REToken(TokType tt, uchar c='\0');
 };
   
 /********************************/
@@ -89,13 +96,19 @@ struct TokenList {
   void incrementIterator();
   bool verifyNext(TokType, uchar = '\0');
   bool verifyNextCharClass(const char *exp, size_t n_exp);
+  bool verifyNextQuantifier(bool, size_t v1, bool, size_t v2);
   bool verifyEnd();
 
 private:
   void build(const char *, size_t idx, size_t len);
+
+  const uchar *buildQuantifier(const uchar *, const uchar *);
+
+  const uchar *buildCharClass(const uchar *, const uchar *);
   void addRange(bool invert, list<uchar> *);
   void addToCharClass(list<uchar>  *, uchar, uchar);
   list<uchar> *computeInverseRange(const list<uchar> *src);
+
   void simpleAddToken(TokType, uchar = '\0');
   void addTokenAndMaybeCcat(TokType, uchar = '\0');
   void maybeAddCcat(TokType);

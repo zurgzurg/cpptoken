@@ -307,7 +307,7 @@ TC_Tokens02::run()
   TokenList tlist("a");
   list<REToken *>::iterator iter = tlist.m_toks.begin();
 
-  ASSERT_TRUE(tlist.equals(iter, SELF_CHAR, 'a'));
+  ASSERT_TRUE(tlist.equals(iter, TT_SELF_CHAR, 'a'));
   this->setStatus(true);
 }
 
@@ -324,9 +324,9 @@ TC_Tokens03::run()
   TokenList tlist("a*");
   list<REToken *>::iterator iter = tlist.m_toks.begin();
 
-  ASSERT_TRUE(tlist.equals(iter, SELF_CHAR, 'a'));
+  ASSERT_TRUE(tlist.equals(iter, TT_SELF_CHAR, 'a'));
   iter++;
-  ASSERT_TRUE(tlist.equals(iter, STAR));
+  ASSERT_TRUE(tlist.equals(iter, TT_STAR));
   this->setStatus(true);
 }
 
@@ -343,11 +343,11 @@ TC_Tokens04::run()
   {
     TokenList tlist("a|b");
     list<REToken *>::iterator iter = tlist.m_toks.begin();
-    ASSERT_TRUE(tlist.equals(iter, SELF_CHAR, 'a'));
+    ASSERT_TRUE(tlist.equals(iter, TT_SELF_CHAR, 'a'));
     iter++;
-    ASSERT_TRUE(tlist.equals(iter, PIPE));
+    ASSERT_TRUE(tlist.equals(iter, TT_PIPE));
     iter++;
-    ASSERT_TRUE(tlist.equals(iter, SELF_CHAR, 'b'));
+    ASSERT_TRUE(tlist.equals(iter, TT_SELF_CHAR, 'b'));
     iter++;
     ASSERT_TRUE(iter == tlist.m_toks.end());
   }
@@ -355,11 +355,11 @@ TC_Tokens04::run()
   {
     TokenList tlist("ab");
     list<REToken *>::iterator iter = tlist.m_toks.begin();
-    ASSERT_TRUE(tlist.equals(iter, SELF_CHAR, 'a'));
+    ASSERT_TRUE(tlist.equals(iter, TT_SELF_CHAR, 'a'));
     iter++;
-    ASSERT_TRUE(tlist.equals(iter, CCAT));
+    ASSERT_TRUE(tlist.equals(iter, TT_CCAT));
     iter++;
-    ASSERT_TRUE(tlist.equals(iter, SELF_CHAR, 'b'));
+    ASSERT_TRUE(tlist.equals(iter, TT_SELF_CHAR, 'b'));
     iter++;
     ASSERT_TRUE(iter == tlist.m_toks.end());
   }
@@ -367,15 +367,15 @@ TC_Tokens04::run()
   {
     TokenList tlist("abc");
     list<REToken *>::iterator iter = tlist.m_toks.begin();
-    ASSERT_TRUE(tlist.equals(iter, SELF_CHAR, 'a'));
+    ASSERT_TRUE(tlist.equals(iter, TT_SELF_CHAR, 'a'));
     iter++;
-    ASSERT_TRUE(tlist.equals(iter, CCAT));
+    ASSERT_TRUE(tlist.equals(iter, TT_CCAT));
     iter++;
-    ASSERT_TRUE(tlist.equals(iter, SELF_CHAR, 'b'));
+    ASSERT_TRUE(tlist.equals(iter, TT_SELF_CHAR, 'b'));
     iter++;
-    ASSERT_TRUE(tlist.equals(iter, CCAT, 'b'));
+    ASSERT_TRUE(tlist.equals(iter, TT_CCAT, 'b'));
     iter++;
-    ASSERT_TRUE(tlist.equals(iter, SELF_CHAR, 'c'));
+    ASSERT_TRUE(tlist.equals(iter, TT_SELF_CHAR, 'c'));
     iter++;
     ASSERT_TRUE(iter == tlist.m_toks.end());
   }
@@ -383,9 +383,9 @@ TC_Tokens04::run()
   {
     TokenList tlist("(a)");
     tlist.beginIteration();
-    ASSERT_TRUE(tlist.verifyNext(LPAREN));
-    ASSERT_TRUE(tlist.verifyNext(SELF_CHAR, 'a'));
-    ASSERT_TRUE(tlist.verifyNext(RPAREN));
+    ASSERT_TRUE(tlist.verifyNext(TT_LPAREN));
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
+    ASSERT_TRUE(tlist.verifyNext(TT_RPAREN));
     ASSERT_TRUE(tlist.verifyEnd());
   }
 
@@ -450,6 +450,28 @@ TC_Tokens05::run()
   this->setStatus(true);
 }
 
+/********************/
+
+struct TC_Tokens06 : public TestCase {
+  TC_Tokens06() : TestCase("TC_Tokens06") {;};
+  void run();
+};
+
+void
+TC_Tokens06::run()
+{
+  {
+    TokenList tlist("a{1,2}");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
+    ASSERT_TRUE(tlist.verifyNextQuantifier(true, 1, true, 2));
+    tlist.incrementIterator();
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  this->setStatus(true);
+}
+
 /****************************************************/
 /* top level                                        */
 /****************************************************/
@@ -468,6 +490,7 @@ make_suite_all_tests()
   s->addTestCase(new TC_Tokens03());
   s->addTestCase(new TC_Tokens04());
   s->addTestCase(new TC_Tokens05());
+  s->addTestCase(new TC_Tokens06());
 
   return s;
 }
