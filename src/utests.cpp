@@ -524,6 +524,15 @@ TC_Tokens06::run()
   }
 
   {
+    TokenList tlist("a{ 23, }");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
+    ASSERT_TRUE(tlist.verifyNextQuantifier(true, 23, false, 0));
+    tlist.incrementIterator();
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  {
     TokenList tlist("a{2}");
     tlist.beginIteration();
     ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
