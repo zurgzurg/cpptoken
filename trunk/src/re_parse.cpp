@@ -92,8 +92,13 @@ TokenList::buildQuantifier(const uchar *ptr, const uchar *last_valid)
 {
   size_t v1, v2;
   uchar ch;
-  bool found;
+  bool v1_found, v2_found;
   REToken *tok;
+
+  v1_found = false;
+  v1 = 0;
+  v2_found = false;
+  v2 = 0;
 
   ptr++;
 
@@ -106,19 +111,35 @@ TokenList::buildQuantifier(const uchar *ptr, const uchar *last_valid)
     break;
   }
 
-  found = false;
-  v1 = 0;
   while (ptr <= last_valid) {
     ch = *ptr;
     if (ch < '0' || ch > '9')
       break;
-    found = true;
+    v1_found = true;
     v1 = v1 * 10 + (ch - '0');
     ptr++;
   }
 
+  while (ptr <= last_valid) {
+    ch = *ptr;
+    if (ch == ' ' || ch == '\t') {
+      ptr++;
+      continue;
+    }
+    break;
+  }
+
   if (ch == ',')
     ptr++;
+
+  while (ptr <= last_valid) {
+    ch = *ptr;
+    if (ch == ' ' || ch == '\t') {
+      ptr++;
+      continue;
+    }
+    break;
+  }
 
   if (ch == '}') {
     tok = new REToken(TT_QUANTIFIER);
@@ -131,23 +152,30 @@ TokenList::buildQuantifier(const uchar *ptr, const uchar *last_valid)
     return ptr;
   }
 
-  found = false;
-  v2 = 0;
   while (ptr <= last_valid) {
     ch = *ptr;
     if (ch < '0' || ch > '9')
       break;
-    found = true;
+    v2_found = true;
     v2 = v2 * 10 + (ch - '0');
     ptr++;
+  }
+
+  while (ptr <= last_valid) {
+    ch = *ptr;
+    if (ch == ' ' || ch == '\t') {
+      ptr++;
+      continue;
+    }
+    break;
   }
 
   if (ch == '}') {
     tok = new REToken(TT_QUANTIFIER);
     tok->u.quant.m_v1 = v1;
     tok->u.quant.m_v2 = v2;
-    tok->u.quant.m_v1Valid = true;
-    tok->u.quant.m_v2Valid = true;
+    tok->u.quant.m_v1Valid = v1_found;
+    tok->u.quant.m_v2Valid = v2_found;
     this->m_toks.push_back(tok);
     ptr++;
     return ptr;
@@ -463,6 +491,12 @@ TokenList::verifyNextQuantifier(bool v1v, size_t v1, bool v2v, size_t v2)
   REToken *tok = *this->m_iter;
 
   if (tok->m_ttype != TT_QUANTIFIER)
+    return false;
+  
+  if (v1v != tok->u.quant.m_v1Valid)
+    return false;
+
+  if (v2v != tok->u.quant.m_v2Valid)
     return false;
   
   if (v1v == true && tok->u.quant.m_v1 != v1)
