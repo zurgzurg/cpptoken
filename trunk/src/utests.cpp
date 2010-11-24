@@ -586,7 +586,7 @@ TC_Tokens07::run()
     TokenList tlist("{2 2}");
     ASSERT_TRUE(false);
   }
-  catch (SyntaxError e) {
+  catch (const SyntaxError &e) {
     ASSERT_TRUE(e.getErrorIndex() == 3);
   }
 
@@ -594,7 +594,7 @@ TC_Tokens07::run()
     TokenList tlist("{2  2}");
     ASSERT_TRUE(false);
   }
-  catch (SyntaxError e) {
+  catch (const SyntaxError &e) {
     ASSERT_TRUE(e.getErrorIndex() == 4);
   }
 
@@ -602,7 +602,7 @@ TC_Tokens07::run()
     TokenList tlist("{2-}");
     ASSERT_TRUE(false);
   }
-  catch (SyntaxError e) {
+  catch (const SyntaxError &e) {
     ASSERT_TRUE(e.getErrorIndex() == 2);
   }
 
@@ -610,7 +610,7 @@ TC_Tokens07::run()
     TokenList tlist("{9999999999999999999999999999999999999999999}");
     ASSERT_TRUE(false);
   }
-  catch (SyntaxError e) {
+  catch (const SyntaxError &e) {
     ASSERT_TRUE(true);
   }
 
@@ -618,7 +618,7 @@ TC_Tokens07::run()
     TokenList tlist("{9, 99999999999999999999999999999999999999999999}");
     ASSERT_TRUE(false);
   }
-  catch (SyntaxError e) {
+  catch (const SyntaxError &e) {
     ASSERT_TRUE(true);
   }
 
@@ -639,7 +639,7 @@ TC_Tokens08::run()
     TokenList tlist("a[b");
     ASSERT_TRUE(false);
   }
-  catch (SyntaxError e) {
+  catch (const SyntaxError &e) {
     ASSERT_TRUE(e.getErrorIndex() == 1);
   }
 

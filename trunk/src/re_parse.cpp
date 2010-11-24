@@ -55,7 +55,7 @@ TokenList::TokenList(const char *regex)
   try {
     this->build(regex, 0, len);
   }
-  catch (SyntaxError e) {
+  catch (const SyntaxError &e) {
     if (!this->m_toks.empty()) {
       list<REToken *>::iterator iter;
       iter = this->m_toks.begin();
@@ -76,7 +76,7 @@ TokenList::TokenList(const char *regex, size_t start, size_t len)
   try {
     this->build(regex, start, len);
   }
-  catch (SyntaxError e) {
+  catch (const SyntaxError &e) {
     if (!this->m_toks.empty()) {
       list<REToken *>::iterator iter;
       iter = this->m_toks.begin();
