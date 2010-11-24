@@ -625,6 +625,28 @@ TC_Tokens07::run()
   this->setStatus(true);
 }
 
+/********************/
+
+struct TC_Tokens08 : public TestCase {
+  TC_Tokens08() : TestCase("TC_Tokens08") {;};
+  void run();
+};
+
+void
+TC_Tokens08::run()
+{
+  try {
+    TokenList tlist("a[b");
+    ASSERT_TRUE(false);
+  }
+  catch (SyntaxError e) {
+    ASSERT_TRUE(e.getErrorIndex() == 1);
+  }
+
+  this->setStatus(true);
+}
+
+
 /****************************************************/
 /* top level                                        */
 /****************************************************/
@@ -645,6 +667,7 @@ make_suite_all_tests()
   s->addTestCase(new TC_Tokens05());
   s->addTestCase(new TC_Tokens06());
   s->addTestCase(new TC_Tokens07());
+  s->addTestCase(new TC_Tokens08());
 
   return s;
 }

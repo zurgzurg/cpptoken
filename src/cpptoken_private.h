@@ -104,7 +104,7 @@ private:
 
   const uchar *buildQuantifier(const uchar *, const uchar *, const uchar *);
 
-  const uchar *buildCharClass(const uchar *, const uchar *);
+  const uchar *buildCharClass(const uchar *, const uchar *, const uchar *);
   void addRange(bool invert, list<uchar> *);
   void addToCharClass(list<uchar>  *, uchar, uchar);
   list<uchar> *computeInverseRange(const list<uchar> *src);

@@ -52,13 +52,43 @@ TokenList::TokenList(const char *regex)
 {
   this->m_toks.clear();
   size_t len = strlen(regex);
-  this->build(regex, 0, len);
+  try {
+    this->build(regex, 0, len);
+  }
+  catch (SyntaxError e) {
+    if (!this->m_toks.empty()) {
+      list<REToken *>::iterator iter;
+      iter = this->m_toks.begin();
+      while (iter != this->m_toks.end()) {
+	if ((*iter)->m_ttype == TT_CHAR_CLASS)
+	  delete (*iter)->u.m_charClass;
+	delete *iter;
+	iter++;
+      }
+    }
+    throw;
+  }
 }
 
 TokenList::TokenList(const char *regex, size_t start, size_t len)
 {
   this->m_toks.clear();
-  this->build(regex, start, len);
+  try {
+    this->build(regex, start, len);
+  }
+  catch (SyntaxError e) {
+    if (!this->m_toks.empty()) {
+      list<REToken *>::iterator iter;
+      iter = this->m_toks.begin();
+      while (iter != this->m_toks.end()) {
+	if ((*iter)->m_ttype == TT_CHAR_CLASS)
+	  delete (*iter)->u.m_charClass;
+	delete *iter;
+	iter++;
+      }
+    }
+    throw;
+  }
 }
 
 
@@ -103,7 +133,7 @@ TokenList::build(const char *regex, size_t start, size_t len)
       this->addTokenAndMaybeCcat(TT_RPAREN, ch);
       break;
     case '[':
-      ptr = this->buildCharClass(ptr, last_valid);
+      ptr = this->buildCharClass((const uchar *)regex, ptr, last_valid);
       break;
     case '{':
       ptr = this->buildQuantifier((const uchar *)regex, ptr, last_valid);
@@ -232,13 +262,16 @@ TokenList::buildQuantifier(const uchar *start, const uchar *ptr,
 }
 
 const uchar *
-TokenList::buildCharClass(const uchar *ptr, const uchar *last_valid)
+TokenList::buildCharClass(const uchar *start, const uchar *ptr,
+			  const uchar *last_valid)
 {
   list<uchar> *tmp = new list<uchar>;
   uchar prev, cur;
+  const uchar *char_class_start;
   int state;
-  bool is_invert = false;
+  bool is_invert = false, close_found = false;
 
+  char_class_start = ptr;
   ptr++;
 
   if (*ptr == '^') {
@@ -257,6 +290,7 @@ TokenList::buildCharClass(const uchar *ptr, const uchar *last_valid)
 	ptr++;
       }
       else if (cur == ']') {
+	close_found = true;
 	ptr++;
 	break;
       }
@@ -275,6 +309,7 @@ TokenList::buildCharClass(const uchar *ptr, const uchar *last_valid)
 	ptr++;
       }
       else if (cur == ']') {
+	close_found = true;
 	tmp->push_back(prev);
 	ptr++;
 	break;
@@ -290,6 +325,7 @@ TokenList::buildCharClass(const uchar *ptr, const uchar *last_valid)
     else if (state == 2) {
       /* maybe got a real range */
       if (cur == ']') {
+	close_found = true;
 	tmp->push_back(prev);
 	tmp->push_back('-');
 	ptr++;
@@ -302,6 +338,12 @@ TokenList::buildCharClass(const uchar *ptr, const uchar *last_valid)
       }
       continue;
     }
+  }
+
+  if (!close_found) {
+    delete tmp;
+    size_t idx = char_class_start - start;
+    throw SyntaxError(idx, "Unterminated char class");
   }
 
   this->addRange(is_invert, tmp);
