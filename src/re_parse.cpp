@@ -1,3 +1,35 @@
+// Copyright (c) 2010, Ram Bhamidipaty
+// All rights reserved.
+// 
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+// 
+//     * Redistributions of source code must retain the above
+//       copyright notice, this list of conditions and the
+//       following disclaimer.
+// 
+//     * Redistributions in binary form must reproduce the above
+//       copyright notice, this list of conditions and the following
+//       disclaimer in the documentation and/or other materials
+//       provided with the distribution.
+// 
+//     * Neither the name of Ram Bhamidipaty nor the names of its
+//       contributors may be used to endorse or promote products
+//       derived from this software without specific prior written permission.
+// 
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 #include <cstring>
 
 #include <list>
@@ -74,7 +106,7 @@ TokenList::build(const char *regex, size_t start, size_t len)
       ptr = this->buildCharClass(ptr, last_valid);
       break;
     case '{':
-      ptr = this->buildQuantifier(ptr, last_valid);
+      ptr = this->buildQuantifier((const uchar *)regex, ptr, last_valid);
       break;
     default:
       this->addTokenAndMaybeCcat(TT_SELF_CHAR, ch);
@@ -88,9 +120,10 @@ TokenList::build(const char *regex, size_t start, size_t len)
 }
 
 const uchar *
-TokenList::buildQuantifier(const uchar *ptr, const uchar *last_valid)
+TokenList::buildQuantifier(const uchar *start, const uchar *ptr,
+			   const uchar *last_valid)
 {
-  size_t v1, v2;
+  size_t v1, v2, tmp;
   uchar ch;
   bool v1_found, v2_found;
   REToken *tok;
@@ -116,7 +149,12 @@ TokenList::buildQuantifier(const uchar *ptr, const uchar *last_valid)
     if (ch < '0' || ch > '9')
       break;
     v1_found = true;
-    v1 = v1 * 10 + (ch - '0');
+    tmp = v1 * 10;
+    if (tmp / 10 != v1) {
+      size_t idx = ptr - start;
+      throw SyntaxError(idx, "Quantifier too large");
+    }
+    v1 = tmp + (ch - '0');
     ptr++;
   }
 
@@ -131,6 +169,10 @@ TokenList::buildQuantifier(const uchar *ptr, const uchar *last_valid)
 
   if (ch == ',')
     ptr++;
+  else if (ch != '}') {
+    size_t idx = ptr - start;
+    throw SyntaxError(idx, "Bad quantifier");
+  }
 
   while (ptr <= last_valid) {
     ch = *ptr;
@@ -157,7 +199,12 @@ TokenList::buildQuantifier(const uchar *ptr, const uchar *last_valid)
     if (ch < '0' || ch > '9')
       break;
     v2_found = true;
-    v2 = v2 * 10 + (ch - '0');
+    tmp = v2 * 10;
+    if ( tmp / 10 != v2) {
+      size_t idx = ptr - start;
+      throw SyntaxError(idx, "Quantifier too large");
+    }
+    v2 = tmp + (ch - '0');
     ptr++;
   }
 

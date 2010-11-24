@@ -102,7 +102,7 @@ struct TokenList {
 private:
   void build(const char *, size_t idx, size_t len);
 
-  const uchar *buildQuantifier(const uchar *, const uchar *);
+  const uchar *buildQuantifier(const uchar *, const uchar *, const uchar *);
 
   const uchar *buildCharClass(const uchar *, const uchar *);
   void addRange(bool invert, list<uchar> *);

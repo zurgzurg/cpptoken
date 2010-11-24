@@ -571,6 +571,60 @@ TC_Tokens06::run()
   this->setStatus(true);
 }
 
+
+/********************/
+
+struct TC_Tokens07 : public TestCase {
+  TC_Tokens07() : TestCase("TC_Tokens07") {;};
+  void run();
+};
+
+void
+TC_Tokens07::run()
+{
+  try {
+    TokenList tlist("{2 2}");
+    ASSERT_TRUE(false);
+  }
+  catch (SyntaxError e) {
+    ASSERT_TRUE(e.getErrorIndex() == 3);
+  }
+
+  try {
+    TokenList tlist("{2  2}");
+    ASSERT_TRUE(false);
+  }
+  catch (SyntaxError e) {
+    ASSERT_TRUE(e.getErrorIndex() == 4);
+  }
+
+  try {
+    TokenList tlist("{2-}");
+    ASSERT_TRUE(false);
+  }
+  catch (SyntaxError e) {
+    ASSERT_TRUE(e.getErrorIndex() == 2);
+  }
+
+  try {
+    TokenList tlist("{9999999999999999999999999999999999999999999}");
+    ASSERT_TRUE(false);
+  }
+  catch (SyntaxError e) {
+    ASSERT_TRUE(true);
+  }
+
+  try {
+    TokenList tlist("{9, 99999999999999999999999999999999999999999999}");
+    ASSERT_TRUE(false);
+  }
+  catch (SyntaxError e) {
+    ASSERT_TRUE(true);
+  }
+
+  this->setStatus(true);
+}
+
 /****************************************************/
 /* top level                                        */
 /****************************************************/
@@ -590,6 +644,7 @@ make_suite_all_tests()
   s->addTestCase(new TC_Tokens04());
   s->addTestCase(new TC_Tokens05());
   s->addTestCase(new TC_Tokens06());
+  s->addTestCase(new TC_Tokens07());
 
   return s;
 }
