@@ -41,7 +41,12 @@ class SyntaxError : public std::exception {
     const char *m_reason;
 
   public:
-  SyntaxError(size_t idx, const char *msg) : std::exception(), m_errIdx(idx), m_reason(msg) {;}
+    SyntaxError(size_t idx, const char *msg)
+      : std::exception(),
+        m_errIdx(idx),
+        m_reason(msg) {;};
+
+    size_t getErrorIndex() const throw();
 };
 
 class Buffer {
