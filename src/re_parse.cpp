@@ -160,7 +160,7 @@ TokenList::buildQuantifier(const uchar *start, const uchar *ptr,
   size_t v1, v2, tmp;
   uchar ch;
   bool v1_found, v2_found;
-  REToken<> *tok;
+  REToken *tok;
 
   v1_found = false;
   v1 = 0;
@@ -218,7 +218,7 @@ TokenList::buildQuantifier(const uchar *start, const uchar *ptr,
   }
 
   if (ch == '}') {
-    tok = new REToken<>(TT_QUANTIFIER);
+    tok = new REToken(TT_QUANTIFIER);
     tok->u.quant.m_v1 = v1;
     tok->u.quant.m_v2 = 0;
     tok->u.quant.m_v1Valid = true;
@@ -252,7 +252,7 @@ TokenList::buildQuantifier(const uchar *start, const uchar *ptr,
   }
 
   if (ch == '}') {
-    tok = new REToken<>(TT_QUANTIFIER);
+    tok = new REToken(TT_QUANTIFIER);
     tok->u.quant.m_v1 = v1;
     tok->u.quant.m_v2 = v2;
     tok->u.quant.m_v1Valid = v1_found;
@@ -380,7 +380,7 @@ TokenList::addRange(bool invert, list<uchar> *chars)
 {
   list<uchar> *clist;
 
-  REToken<> *tok = new REToken<>(TT_CHAR_CLASS);
+  REToken *tok = new REToken(TT_CHAR_CLASS);
 
   if (invert) {
     clist = this->computeInverseRange(chars);
@@ -424,7 +424,7 @@ TokenList::computeInverseRange(const list<uchar> *src)
 void
 TokenList::simpleAddToken(TokType tp, uchar ch)
 {
-  REToken<> *tok = new REToken<>(tp, ch);
+  REToken *tok = new REToken(tp, ch);
   this->m_toks.push_back(tok);
   return;
 }
@@ -433,7 +433,7 @@ void
 TokenList::addTokenAndMaybeCcat(TokType tp, uchar ch)
 {
   this->maybeAddCcat(tp);
-  REToken<> *tok = new REToken<>(tp, ch);
+  REToken *tok = new REToken(tp, ch);
   this->m_toks.push_back(tok);
   return;
 }
@@ -450,11 +450,11 @@ TokenList::maybeAddCcat(TokType cur_tp)
   TokList::iterator iter = this->m_toks.end();
   iter--;
 
-  REToken<> *tok = *iter;
+  REToken *tok = *iter;
 
   switch (tok->m_ttype) {
   case TT_SELF_CHAR:
-    tok = new REToken<>(TT_CCAT);
+    tok = new REToken(TT_CCAT);
     this->m_toks.push_back(tok);
     break;
   default:
@@ -468,7 +468,7 @@ TokenList::maybeAddCcat(TokType cur_tp)
 bool
 TokenList::equals(TokList::iterator iter, TokType tp, uchar ch)
 {
-  REToken<> *ptr;
+  REToken *ptr;
 
   if (iter == this->m_toks.end())
     return false;
@@ -489,7 +489,7 @@ TokenList::verifyCharClassLength(size_t exp)
 {
   if (this->m_iter == this->m_toks.end())
     return false;
-  REToken<> *tok = *this->m_iter;
+  REToken *tok = *this->m_iter;
   if (tok->m_ttype != TT_CHAR_CLASS)
     return false;
   size_t act = tok->u.m_charClass->size();
@@ -503,7 +503,7 @@ TokenList::verifyCharClassMember(uchar exp)
 {
   if (this->m_iter == this->m_toks.end())
     return false;
-  REToken<> *tok = *this->m_iter;
+  REToken *tok = *this->m_iter;
   if (tok->m_ttype != TT_CHAR_CLASS)
     return false;
   list<uchar>::iterator iter = tok->u.m_charClass->begin();
@@ -542,7 +542,7 @@ TokenList::verifyNextCharClass(const char *exp, size_t n_exp)
   if (this->m_iter == this->m_toks.end())
     return false;
 
-  REToken<> *tok = *this->m_iter;
+  REToken *tok = *this->m_iter;
 
   if (tok->m_ttype != TT_CHAR_CLASS)
     return false;
@@ -581,7 +581,7 @@ TokenList::verifyNextQuantifier(bool v1v, size_t v1, bool v2v, size_t v2)
   if (this->m_iter == this->m_toks.end())
     return false;
 
-  REToken<> *tok = *this->m_iter;
+  REToken *tok = *this->m_iter;
 
   if (tok->m_ttype != TT_QUANTIFIER)
     return false;
