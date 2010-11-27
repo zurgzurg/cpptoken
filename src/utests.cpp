@@ -2,6 +2,7 @@
 
 #include <list>
 #include <string>
+#include <limits>
 #include <sstream>
 #include <exception>
 #include <iostream>
@@ -305,7 +306,7 @@ void
 TC_Tokens02::run()
 {
   TokenList tlist("a");
-  list<REToken *>::iterator iter = tlist.m_toks.begin();
+  TokenList::TokList::iterator iter = tlist.m_toks.begin();
 
   ASSERT_TRUE(tlist.equals(iter, TT_SELF_CHAR, 'a'));
   this->setStatus(true);
@@ -322,7 +323,7 @@ void
 TC_Tokens03::run()
 {
   TokenList tlist("a*");
-  list<REToken *>::iterator iter = tlist.m_toks.begin();
+  TokenList::TokList::iterator iter = tlist.m_toks.begin();
 
   ASSERT_TRUE(tlist.equals(iter, TT_SELF_CHAR, 'a'));
   iter++;
@@ -342,7 +343,7 @@ TC_Tokens04::run()
 {
   {
     TokenList tlist("a|b");
-    list<REToken *>::iterator iter = tlist.m_toks.begin();
+    TokenList::TokList::iterator iter = tlist.m_toks.begin();
     ASSERT_TRUE(tlist.equals(iter, TT_SELF_CHAR, 'a'));
     iter++;
     ASSERT_TRUE(tlist.equals(iter, TT_PIPE));
@@ -354,7 +355,7 @@ TC_Tokens04::run()
 
   {
     TokenList tlist("ab");
-    list<REToken *>::iterator iter = tlist.m_toks.begin();
+    TokenList::TokList::iterator iter = tlist.m_toks.begin();
     ASSERT_TRUE(tlist.equals(iter, TT_SELF_CHAR, 'a'));
     iter++;
     ASSERT_TRUE(tlist.equals(iter, TT_CCAT));
@@ -366,7 +367,7 @@ TC_Tokens04::run()
   
   {
     TokenList tlist("abc");
-    list<REToken *>::iterator iter = tlist.m_toks.begin();
+    TokenList::TokList::iterator iter = tlist.m_toks.begin();
     ASSERT_TRUE(tlist.equals(iter, TT_SELF_CHAR, 'a'));
     iter++;
     ASSERT_TRUE(tlist.equals(iter, TT_CCAT));
@@ -646,6 +647,26 @@ TC_Tokens08::run()
   this->setStatus(true);
 }
 
+/********************/
+
+struct TC_MemFail01 : public TestCase {
+  TC_MemFail01() : TestCase("TC_MemFail01") {;};
+  void run();
+};
+
+void
+TC_MemFail01::run()
+{
+  try {
+    TokenList tlist("a[b");
+    ASSERT_TRUE(false);
+  }
+  catch (const SyntaxError &e) {
+    ASSERT_TRUE(e.getErrorIndex() == 1);
+  }
+
+  this->setStatus(true);
+}
 
 /****************************************************/
 /* top level                                        */
@@ -668,6 +689,8 @@ make_suite_all_tests()
   s->addTestCase(new TC_Tokens06());
   s->addTestCase(new TC_Tokens07());
   s->addTestCase(new TC_Tokens08());
+
+  s->addTestCase(new TC_MemFail01());
 
   return s;
 }

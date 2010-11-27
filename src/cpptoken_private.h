@@ -35,6 +35,78 @@
 
 namespace cpptoken {
 
+template <class T>
+class Alloc  {
+ public:
+  typedef T                value_type;
+  typedef T*               pointer;
+  typedef const T*         const_pointer;
+  typedef T&               reference;
+  typedef const T&         const_reference;
+  typedef std::size_t      size_type;
+  typedef std::ptrdiff_t   difference_type;
+
+  template <class U>
+  struct rebind {
+    typedef Alloc<U> other;
+  };
+
+  pointer address (reference value) const {
+    return &value;
+  }
+
+  const_pointer address (const_reference value) const {
+    return &value;
+  }
+
+  Alloc() throw() {
+  }
+
+  Alloc(const Alloc&) throw() {
+  }
+
+  template <class U>
+  Alloc (const Alloc<U>&) throw() {
+  }
+
+  ~Alloc() throw() {
+  }
+
+  size_type max_size () const throw() {
+    return std::numeric_limits<std::size_t>::max() / sizeof(T);
+  }
+
+  pointer allocate (size_type num, const void* = 0) {
+    pointer ret = (pointer)(::operator new(num*sizeof(T)));
+    return ret;
+  }
+
+  void construct (pointer p, const T& value) {
+    new((void*)p)T(value);
+  }
+
+  void destroy (pointer p) {
+    p->~T();
+  }
+
+  void deallocate (pointer p, size_type num) {
+    ::operator delete((void*)p);
+  }
+};
+
+template <class T1, class T2>
+bool operator== (const Alloc<T1>&, const Alloc<T2>&) throw() {
+  return true;
+}
+
+template <class T1, class T2>
+bool operator!= (const Alloc<T1>&, const Alloc<T2>&) throw() {
+  return false;
+}
+
+
+/********************************/
+
 enum TokType {
   TT_SELF_CHAR,
 
@@ -66,52 +138,71 @@ struct RETokQuantifier {
   size_t m_v2;
 };
 
+template <template <typename> class Alloc = std::allocator >
 struct REToken {
   TokType m_ttype;
   union {
     uchar m_ch;
-    list<uchar> *m_charClass;
+    list<uchar, Alloc<uchar> > *m_charClass;
+    //list<uchar> *m_charClass;
     RETokQuantifier quant;
   } u;
+    
+  REToken(TokType tt, uchar c='\0') : m_ttype(tt) {this->u.m_ch = c;};
+};
 
-  REToken(TokType tt, uchar c='\0');
+template <template <typename> class Alloc = std::allocator >
+struct foo {
+  list<int, Alloc<int> > junk;
 };
   
 /********************************/
 
-struct TokenList {
-  list<REToken *>  m_toks;
-  list<REToken *>::iterator m_iter;
 
-  TokenList(const char *);
-  TokenList(const char *, size_t idx, size_t len);
-  ~TokenList();
+  struct TokenList {
+    typedef list<REToken<> *> TokList;
 
-  bool equals(list<REToken *>::iterator, TokType, uchar = '\0');
+    TokList  m_toks;
+    TokList::iterator m_iter;
 
-  bool verifyCharClassLength(size_t);
-  bool verifyCharClassMember(uchar);
+    TokenList(const char *);
+    TokenList(const char *, size_t idx, size_t len);
+    ~TokenList();
 
-  void beginIteration();
-  void incrementIterator();
-  bool verifyNext(TokType, uchar = '\0');
-  bool verifyNextCharClass(const char *exp, size_t n_exp);
-  bool verifyNextQuantifier(bool, size_t v1, bool, size_t v2);
-  bool verifyEnd();
+    bool equals(TokList::iterator, TokType, uchar = '\0');
 
-private:
-  void build(const char *, size_t idx, size_t len);
+    bool verifyCharClassLength(size_t);
+    bool verifyCharClassMember(uchar);
 
-  const uchar *buildQuantifier(const uchar *, const uchar *, const uchar *);
+    void beginIteration();
+    void incrementIterator();
+    bool verifyNext(TokType, uchar = '\0');
+    bool verifyNextCharClass(const char *exp, size_t n_exp);
+    bool verifyNextQuantifier(bool, size_t v1, bool, size_t v2);
+    bool verifyEnd();
 
-  const uchar *buildCharClass(const uchar *, const uchar *, const uchar *);
-  void addRange(bool invert, list<uchar> *);
-  void addToCharClass(list<uchar>  *, uchar, uchar);
-  list<uchar> *computeInverseRange(const list<uchar> *src);
+  private:
+    void build(const char *, size_t idx, size_t len);
 
-  void simpleAddToken(TokType, uchar = '\0');
-  void addTokenAndMaybeCcat(TokType, uchar = '\0');
-  void maybeAddCcat(TokType);
+    const uchar *buildQuantifier(const uchar *, const uchar *, const uchar *);
+
+    const uchar *buildCharClass(const uchar *, const uchar *, const uchar *);
+    void addRange(bool invert, list<uchar> *);
+    void addToCharClass(list<uchar>  *, uchar, uchar);
+    list<uchar> *computeInverseRange(const list<uchar> *src);
+
+    void simpleAddToken(TokType, uchar = '\0');
+    void addTokenAndMaybeCcat(TokType, uchar = '\0');
+    void maybeAddCcat(TokType);
+  };
+
+
+/********************************/
+
+class FABase {
+};
+
+class NFA : public FABase {
 };
 
 }
