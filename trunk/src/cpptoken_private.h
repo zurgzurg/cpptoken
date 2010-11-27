@@ -138,29 +138,22 @@ struct RETokQuantifier {
   size_t m_v2;
 };
 
-template <template <typename> class Alloc = std::allocator >
 struct REToken {
   TokType m_ttype;
   union {
     uchar m_ch;
-    list<uchar, Alloc<uchar> > *m_charClass;
-    //list<uchar> *m_charClass;
+    list<uchar> *m_charClass;
     RETokQuantifier quant;
   } u;
     
   REToken(TokType tt, uchar c='\0') : m_ttype(tt) {this->u.m_ch = c;};
 };
 
-template <template <typename> class Alloc = std::allocator >
-struct foo {
-  list<int, Alloc<int> > junk;
-};
-  
 /********************************/
 
 
   struct TokenList {
-    typedef list<REToken<> *> TokList;
+    typedef list<REToken *> TokList;
 
     TokList  m_toks;
     TokList::iterator m_iter;
