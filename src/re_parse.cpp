@@ -64,7 +64,9 @@ TokenList::TokenList(Alloc<REToken *> obj, const char *regex)
   }
 }
 
-TokenList::TokenList(const char *regex, size_t start, size_t len)
+TokenList::TokenList(Alloc<REToken *> obj, const char *regex,
+		     size_t start, size_t len)
+  : m_toks(obj)
 {
   this->m_toks.clear();
   try {

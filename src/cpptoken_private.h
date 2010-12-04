@@ -170,7 +170,7 @@ struct TokenList {
   TokList::iterator m_iter;
 
   TokenList(Alloc<REToken *>, const char *);
-  TokenList(const char *, size_t idx, size_t len);
+  TokenList(Alloc<REToken *>, const char *, size_t idx, size_t len);
   ~TokenList();
 
   bool equals(TokList::iterator, TokType, uchar = '\0');

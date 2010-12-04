@@ -353,7 +353,6 @@ TC_Tokens02::run()
   this->setStatus(true);
 }
 
-#if 0
 /********************/
 
 struct TC_Tokens03 : public TestCase {
@@ -364,7 +363,11 @@ struct TC_Tokens03 : public TestCase {
 void
 TC_Tokens03::run()
 {
-  TokenList tlist("a*");
+  MemoryControl mc;
+  Alloc<REToken *> alloc;
+  alloc.setMC(&mc);
+
+  TokenList tlist(alloc, "a*");
   TokenList::TokList::iterator iter = tlist.m_toks.begin();
 
   ASSERT_TRUE(tlist.equals(iter, TT_SELF_CHAR, 'a'));
@@ -383,8 +386,12 @@ struct TC_Tokens04 : public TestCase {
 void
 TC_Tokens04::run()
 {
+  MemoryControl mc;
+  Alloc<REToken *> alloc;
+  alloc.setMC(&mc);
+
   {
-    TokenList tlist("a|b");
+    TokenList tlist(alloc, "a|b");
     TokenList::TokList::iterator iter = tlist.m_toks.begin();
     ASSERT_TRUE(tlist.equals(iter, TT_SELF_CHAR, 'a'));
     iter++;
@@ -396,7 +403,7 @@ TC_Tokens04::run()
   }
 
   {
-    TokenList tlist("ab");
+    TokenList tlist(alloc, "ab");
     TokenList::TokList::iterator iter = tlist.m_toks.begin();
     ASSERT_TRUE(tlist.equals(iter, TT_SELF_CHAR, 'a'));
     iter++;
@@ -408,7 +415,7 @@ TC_Tokens04::run()
   }
   
   {
-    TokenList tlist("abc");
+    TokenList tlist(alloc, "abc");
     TokenList::TokList::iterator iter = tlist.m_toks.begin();
     ASSERT_TRUE(tlist.equals(iter, TT_SELF_CHAR, 'a'));
     iter++;
@@ -424,7 +431,7 @@ TC_Tokens04::run()
   }
 
   {
-    TokenList tlist("(a)");
+    TokenList tlist(alloc, "(a)");
     tlist.beginIteration();
     ASSERT_TRUE(tlist.verifyNext(TT_LPAREN));
     ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
@@ -433,28 +440,28 @@ TC_Tokens04::run()
   }
 
   {
-    TokenList tlist("[abc]");
+    TokenList tlist(alloc, "[abc]");
     tlist.beginIteration();
     ASSERT_TRUE(tlist.verifyNextCharClass("abc", 3));
     ASSERT_TRUE(tlist.verifyEnd());
   }
 
   {
-    TokenList tlist("[a-c]");
+    TokenList tlist(alloc, "[a-c]");
     tlist.beginIteration();
     ASSERT_TRUE(tlist.verifyNextCharClass("abc", 3));
     ASSERT_TRUE(tlist.verifyEnd());
   }
 
   {
-    TokenList tlist("[-c]");
+    TokenList tlist(alloc, "[-c]");
     tlist.beginIteration();
     ASSERT_TRUE(tlist.verifyNextCharClass("-c", 2));
     ASSERT_TRUE(tlist.verifyEnd());
   }
 
   {
-    TokenList tlist("[a-cx-]");
+    TokenList tlist(alloc, "[a-cx-]");
     tlist.beginIteration();
     ASSERT_TRUE(tlist.verifyNextCharClass("abcx-", 5));
     ASSERT_TRUE(tlist.verifyEnd());
@@ -473,8 +480,12 @@ struct TC_Tokens05 : public TestCase {
 void
 TC_Tokens05::run()
 {
+  MemoryControl mc;
+  Alloc<REToken *> alloc;
+  alloc.setMC(&mc);
+
   {
-    TokenList tlist("[^abc]");
+    TokenList tlist(alloc, "[^abc]");
     tlist.beginIteration();
     ASSERT_TRUE(tlist.verifyCharClassLength(256 - 3));
     tlist.incrementIterator();
@@ -482,7 +493,7 @@ TC_Tokens05::run()
   }
 
   {
-    TokenList tlist("[^abc]");
+    TokenList tlist(alloc, "[^abc]");
     tlist.beginIteration();
     ASSERT_TRUE(tlist.verifyCharClassMember('z'));
     ASSERT_TRUE( ! tlist.verifyCharClassMember('a'));
@@ -503,8 +514,12 @@ struct TC_Tokens06 : public TestCase {
 void
 TC_Tokens06::run()
 {
+  MemoryControl mc;
+  Alloc<REToken *> alloc;
+  alloc.setMC(&mc);
+
   {
-    TokenList tlist("a{1,2}");
+    TokenList tlist(alloc, "a{1,2}");
     tlist.beginIteration();
     ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
     ASSERT_TRUE(tlist.verifyNextQuantifier(true, 1, true, 2));
@@ -513,7 +528,7 @@ TC_Tokens06::run()
   }
 
   {
-    TokenList tlist("a{10,20}");
+    TokenList tlist(alloc, "a{10,20}");
     tlist.beginIteration();
     ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
     ASSERT_TRUE(tlist.verifyNextQuantifier(true, 10, true, 20));
@@ -522,7 +537,7 @@ TC_Tokens06::run()
   }
 
   {
-    TokenList tlist("a{ 10,20}");
+    TokenList tlist(alloc, "a{ 10,20}");
     tlist.beginIteration();
     ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
     ASSERT_TRUE(tlist.verifyNextQuantifier(true, 10, true, 20));
@@ -531,7 +546,7 @@ TC_Tokens06::run()
   }
 
   {
-    TokenList tlist("a{ 10 , 20}");
+    TokenList tlist(alloc, "a{ 10 , 20}");
     tlist.beginIteration();
     ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
     ASSERT_TRUE(tlist.verifyNextQuantifier(true, 10, true, 20));
@@ -540,7 +555,7 @@ TC_Tokens06::run()
   }
 
   {
-    TokenList tlist("a{ 2 , 3 }");
+    TokenList tlist(alloc, "a{ 2 , 3 }");
     tlist.beginIteration();
     ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
     ASSERT_TRUE(tlist.verifyNextQuantifier(true, 2, true, 3));
@@ -549,7 +564,7 @@ TC_Tokens06::run()
   }
 
   {
-    TokenList tlist("a{2,}");
+    TokenList tlist(alloc, "a{2,}");
     tlist.beginIteration();
     ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
     ASSERT_TRUE(tlist.verifyNextQuantifier(true, 2, false, 0));
@@ -558,7 +573,7 @@ TC_Tokens06::run()
   }
 
   {
-    TokenList tlist("a{ 23 ,}");
+    TokenList tlist(alloc, "a{ 23 ,}");
     tlist.beginIteration();
     ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
     ASSERT_TRUE(tlist.verifyNextQuantifier(true, 23, false, 0));
@@ -567,7 +582,7 @@ TC_Tokens06::run()
   }
 
   {
-    TokenList tlist("a{ 23, }");
+    TokenList tlist(alloc, "a{ 23, }");
     tlist.beginIteration();
     ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
     ASSERT_TRUE(tlist.verifyNextQuantifier(true, 23, false, 0));
@@ -576,7 +591,7 @@ TC_Tokens06::run()
   }
 
   {
-    TokenList tlist("a{2}");
+    TokenList tlist(alloc, "a{2}");
     tlist.beginIteration();
     ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
     ASSERT_TRUE(tlist.verifyNextQuantifier(true, 2, false, 0));
@@ -585,7 +600,7 @@ TC_Tokens06::run()
   }
 
   {
-    TokenList tlist("a{ 2 }");
+    TokenList tlist(alloc, "a{ 2 }");
     tlist.beginIteration();
     ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
     ASSERT_TRUE(tlist.verifyNextQuantifier(true, 2, false, 0));
@@ -594,7 +609,7 @@ TC_Tokens06::run()
   }
 
   {
-    TokenList tlist("a{ 22 }");
+    TokenList tlist(alloc, "a{ 22 }");
     tlist.beginIteration();
     ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
     ASSERT_TRUE(tlist.verifyNextQuantifier(true, 22, false, 0));
@@ -603,7 +618,7 @@ TC_Tokens06::run()
   }
 
   {
-    TokenList tlist("a{,3}");
+    TokenList tlist(alloc, "a{,3}");
     tlist.beginIteration();
     ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
     ASSERT_TRUE(tlist.verifyNextQuantifier(false, 0, true, 3));
@@ -625,8 +640,12 @@ struct TC_Tokens07 : public TestCase {
 void
 TC_Tokens07::run()
 {
+  MemoryControl mc;
+  Alloc<REToken *> alloc;
+  alloc.setMC(&mc);
+
   try {
-    TokenList tlist("{2 2}");
+    TokenList tlist(alloc, "{2 2}");
     ASSERT_TRUE(false);
   }
   catch (const SyntaxError &e) {
@@ -634,7 +653,7 @@ TC_Tokens07::run()
   }
 
   try {
-    TokenList tlist("{2  2}");
+    TokenList tlist(alloc, "{2  2}");
     ASSERT_TRUE(false);
   }
   catch (const SyntaxError &e) {
@@ -642,7 +661,7 @@ TC_Tokens07::run()
   }
 
   try {
-    TokenList tlist("{2-}");
+    TokenList tlist(alloc, "{2-}");
     ASSERT_TRUE(false);
   }
   catch (const SyntaxError &e) {
@@ -650,7 +669,7 @@ TC_Tokens07::run()
   }
 
   try {
-    TokenList tlist("{9999999999999999999999999999999999999999999}");
+    TokenList tlist(alloc, "{9999999999999999999999999999999999999999999}");
     ASSERT_TRUE(false);
   }
   catch (const SyntaxError &e) {
@@ -658,7 +677,7 @@ TC_Tokens07::run()
   }
 
   try {
-    TokenList tlist("{9, 99999999999999999999999999999999999999999999}");
+    TokenList tlist(alloc, "{9, 99999999999999999999999999999999999999999999}");
     ASSERT_TRUE(false);
   }
   catch (const SyntaxError &e) {
@@ -678,8 +697,12 @@ struct TC_Tokens08 : public TestCase {
 void
 TC_Tokens08::run()
 {
+  MemoryControl mc;
+  Alloc<REToken *> alloc;
+  alloc.setMC(&mc);
+
   try {
-    TokenList tlist("a[b");
+    TokenList tlist(alloc, "a[b");
     ASSERT_TRUE(false);
   }
   catch (const SyntaxError &e) {
@@ -699,8 +722,12 @@ struct TC_MemFail01 : public TestCase {
 void
 TC_MemFail01::run()
 {
+  MemoryControl mc;
+  Alloc<REToken *> alloc;
+  alloc.setMC(&mc);
+
   try {
-    TokenList tlist("a[b");
+    TokenList tlist(alloc, "a[b");
     ASSERT_TRUE(false);
   }
   catch (const SyntaxError &e) {
@@ -709,7 +736,6 @@ TC_MemFail01::run()
 
   this->setStatus(true);
 }
-#endif
 
 /****************************************************/
 /* top level                                        */
@@ -726,8 +752,6 @@ make_suite_all_tests()
 
   s->addTestCase(new TC_Tokens01());
   s->addTestCase(new TC_Tokens02());
-
-#if 0
   s->addTestCase(new TC_Tokens03());
   s->addTestCase(new TC_Tokens04());
   s->addTestCase(new TC_Tokens05());
@@ -736,7 +760,6 @@ make_suite_all_tests()
   s->addTestCase(new TC_Tokens08());
 
   s->addTestCase(new TC_MemFail01());
-#endif
 
   return s;
 }
