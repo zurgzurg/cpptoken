@@ -37,6 +37,8 @@ namespace cpptoken {
 
 template <class T>
 class Alloc  {
+  MemoryControl *mc;
+
  public:
   typedef T                value_type;
   typedef T*               pointer;
@@ -60,13 +62,16 @@ class Alloc  {
   }
 
   Alloc() throw() {
+    this->mc = NULL;
   }
 
-  Alloc(const Alloc&) throw() {
+  Alloc(const Alloc&other) throw() {
+    this->mc = other.mc;
   }
 
   template <class U>
-  Alloc (const Alloc<U>&) throw() {
+  Alloc(const Alloc<U>&other) throw() {
+    this->mc = other.getMC();
   }
 
   ~Alloc() throw() {
@@ -77,8 +82,12 @@ class Alloc  {
   }
 
   pointer allocate (size_type num, const void* = 0) {
-    pointer ret = (pointer)(::operator new(num*sizeof(T)));
-    return ret;
+#if 0
+    pointer ret2 = (pointer)(::operator new(num*sizeof(T)));
+#else
+    pointer ret2 = (pointer)this->mc->allocate(num * sizeof(T));
+#endif
+    return ret2;
   }
 
   void construct (pointer p, const T& value) {
@@ -92,6 +101,11 @@ class Alloc  {
   void deallocate (pointer p, size_type num) {
     ::operator delete((void*)p);
   }
+
+  ////////
+
+  MemoryControl *getMC() const throw() {return this->mc;}
+  void setMC(MemoryControl *obj) throw() { this->mc = obj; }
 };
 
 template <class T1, class T2>
@@ -152,42 +166,42 @@ struct REToken {
 /********************************/
 
 
-  struct TokenList {
-    typedef list<REToken *> TokList;
+struct TokenList {
+  typedef list<REToken *, Alloc<REToken *> > TokList;
 
-    TokList  m_toks;
-    TokList::iterator m_iter;
+  TokList  m_toks;
+  TokList::iterator m_iter;
 
-    TokenList(const char *);
-    TokenList(const char *, size_t idx, size_t len);
-    ~TokenList();
+  TokenList(Alloc<REToken *>, const char *);
+  TokenList(const char *, size_t idx, size_t len);
+  ~TokenList();
 
-    bool equals(TokList::iterator, TokType, uchar = '\0');
+  bool equals(TokList::iterator, TokType, uchar = '\0');
 
-    bool verifyCharClassLength(size_t);
-    bool verifyCharClassMember(uchar);
+  bool verifyCharClassLength(size_t);
+  bool verifyCharClassMember(uchar);
 
-    void beginIteration();
-    void incrementIterator();
-    bool verifyNext(TokType, uchar = '\0');
-    bool verifyNextCharClass(const char *exp, size_t n_exp);
-    bool verifyNextQuantifier(bool, size_t v1, bool, size_t v2);
-    bool verifyEnd();
+  void beginIteration();
+  void incrementIterator();
+  bool verifyNext(TokType, uchar = '\0');
+  bool verifyNextCharClass(const char *exp, size_t n_exp);
+  bool verifyNextQuantifier(bool, size_t v1, bool, size_t v2);
+  bool verifyEnd();
 
-  private:
-    void build(const char *, size_t idx, size_t len);
+private:
+  void build(const char *, size_t idx, size_t len);
 
-    const uchar *buildQuantifier(const uchar *, const uchar *, const uchar *);
+  const uchar *buildQuantifier(const uchar *, const uchar *, const uchar *);
 
-    const uchar *buildCharClass(const uchar *, const uchar *, const uchar *);
-    void addRange(bool invert, list<uchar> *);
-    void addToCharClass(list<uchar>  *, uchar, uchar);
-    list<uchar> *computeInverseRange(const list<uchar> *src);
+  const uchar *buildCharClass(const uchar *, const uchar *, const uchar *);
+  void addRange(bool invert, list<uchar> *);
+  void addToCharClass(list<uchar>  *, uchar, uchar);
+  list<uchar> *computeInverseRange(const list<uchar> *src);
 
-    void simpleAddToken(TokType, uchar = '\0');
-    void addTokenAndMaybeCcat(TokType, uchar = '\0');
-    void maybeAddCcat(TokType);
-  };
+  void simpleAddToken(TokType, uchar = '\0');
+  void addTokenAndMaybeCcat(TokType, uchar = '\0');
+  void maybeAddCcat(TokType);
+};
 
 
 /********************************/
