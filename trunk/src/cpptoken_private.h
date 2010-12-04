@@ -82,12 +82,8 @@ class Alloc  {
   }
 
   pointer allocate (size_type num, const void* = 0) {
-#if 0
-    pointer ret2 = (pointer)(::operator new(num*sizeof(T)));
-#else
-    pointer ret2 = (pointer)this->mc->allocate(num * sizeof(T));
-#endif
-    return ret2;
+    pointer ret = (pointer)this->mc->allocate(num * sizeof(T));
+    return ret;
   }
 
   void construct (pointer p, const T& value) {

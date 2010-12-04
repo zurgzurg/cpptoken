@@ -296,6 +296,8 @@ TC_Basic01::run()
   this->setStatus(true);
 }
 
+/********************/
+
 struct TC_Basic02 : public TestCase {
   TC_Basic02() : TestCase("TC_Basic02") {;};
   void run();
@@ -339,8 +341,6 @@ struct TC_Tokens02 : public TestCase {
   void run();
 };
 
-/********************/
-
 void
 TC_Tokens02::run()
 {
@@ -351,12 +351,12 @@ TC_Tokens02::run()
   this->setStatus(true);
 }
 
+/********************/
+
 struct TC_Tokens03 : public TestCase {
   TC_Tokens03() : TestCase("TC_Tokens03") {;};
   void run();
 };
-
-/********************/
 
 void
 TC_Tokens03::run()
@@ -719,9 +719,9 @@ make_suite_all_tests()
   s = new TestSuite();
 
   s->addTestCase(new TC_Basic01());
-#if 0
   s->addTestCase(new TC_Basic02());
 
+#if 0
   s->addTestCase(new TC_Tokens01());
   s->addTestCase(new TC_Tokens02());
   s->addTestCase(new TC_Tokens03());
