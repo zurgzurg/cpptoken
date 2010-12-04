@@ -426,7 +426,13 @@ TokenList::addTokenAndMaybeCcat(TokType tp, uchar ch)
 {
   this->maybeAddCcat(tp);
   REToken *tok = new REToken(tp, ch);
-  this->m_toks.push_back(tok);
+  try {
+    this->m_toks.push_back(tok);
+  }
+  catch (const bad_alloc &e) {
+    delete tok;
+    throw;
+  }
   return;
 }
 

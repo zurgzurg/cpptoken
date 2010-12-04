@@ -115,7 +115,6 @@ bool operator!= (const Alloc<T1>&, const Alloc<T2>&) throw() {
   return false;
 }
 
-
 /********************************/
 
 enum TokType {
