@@ -30,14 +30,15 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <stdarg.h>
+#include <cstdarg>
+#include <cstring>
 
 #include <list>
-#include <string>
 #include <limits>
 #include <sstream>
 #include <exception>
 #include <iostream>
+#include <new>
 
 using namespace std;
 
@@ -737,6 +738,81 @@ TC_MemFail01::run()
   this->setStatus(true);
 }
 
+/********************/
+
+class MemoryControlWithFailure : public MemoryControl {
+ public:
+  size_t  n_allocs;
+  size_t  n_deallocs;
+
+  bool    use_limit;
+  size_t  limit;
+
+  virtual void *allocate(size_t);
+  virtual void deallocate(void *, size_t);
+};
+
+void *
+MemoryControlWithFailure::allocate(size_t sz)
+{
+  this->n_allocs++;
+  if (this->use_limit && this->n_allocs > this->limit)
+    throw bad_alloc();
+  void *ptr = ::operator new(sz);
+  return ptr;
+}
+
+void
+MemoryControlWithFailure::deallocate(void *ptr, size_t sz)
+{
+  this->n_deallocs++;
+  ::operator delete(ptr);
+}
+
+struct TC_MemFail02 : public TestCase {
+  TC_MemFail02() : TestCase("TC_MemFail02") {;};
+  void run();
+};
+
+void
+TC_MemFail02::run()
+{
+  MemoryControlWithFailure mc;
+  mc.n_allocs = 0;
+  mc.n_deallocs = 0;
+  mc.use_limit = false;
+  Alloc<REToken *> alloc;
+  alloc.setMC(&mc);
+
+  {
+    TokenList tlist(alloc, "a");
+  }
+
+  cout << "num allocs=" << mc.n_allocs << "\n";
+  cout << "num deallocs=" << mc.n_deallocs << "\n";
+
+  size_t n_allocs = mc.n_allocs;
+  for (size_t lim = 0; lim < n_allocs; lim++) {
+
+    mc.n_allocs = 0;
+    mc.n_deallocs = 0;
+    mc.use_limit = true;
+    mc.limit = lim;
+    cout << "alloc with lim=" << lim << "\n";
+
+    try {
+      TokenList tlist(alloc, "a");
+      ASSERT_TRUE(false);
+    }
+    catch (const bad_alloc &e) {
+      cout << "got one out of mem exception\n";
+      ASSERT_TRUE(true);
+    }
+  }
+
+  this->setStatus(true);
+}
+
 /****************************************************/
 /* top level                                        */
 /****************************************************/
@@ -760,6 +836,7 @@ make_suite_all_tests()
   s->addTestCase(new TC_Tokens08());
 
   s->addTestCase(new TC_MemFail01());
+  s->addTestCase(new TC_MemFail02());
 
   return s;
 }
