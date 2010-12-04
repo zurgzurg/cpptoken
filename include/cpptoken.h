@@ -38,7 +38,7 @@ namespace cpptoken {
 class MemoryControl {
  public:
   virtual void *allocate(size_t);
-  virtual void dellocate(void *, size_t);
+  virtual void deallocate(void *, size_t);
 };
 
 class SyntaxError : public std::exception {

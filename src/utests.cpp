@@ -316,8 +316,6 @@ TC_Basic02::run()
   this->setStatus(true);
 }
 
-#if 0
-
 /****************************************************/
 /****************************************************/
 /* tokenization tests                               */
@@ -344,13 +342,18 @@ struct TC_Tokens02 : public TestCase {
 void
 TC_Tokens02::run()
 {
-  TokenList tlist("a");
+  MemoryControl mc;
+  Alloc<REToken *> alloc;
+  alloc.setMC(&mc);
+
+  TokenList tlist(alloc, "a");
   TokenList::TokList::iterator iter = tlist.m_toks.begin();
 
   ASSERT_TRUE(tlist.equals(iter, TT_SELF_CHAR, 'a'));
   this->setStatus(true);
 }
 
+#if 0
 /********************/
 
 struct TC_Tokens03 : public TestCase {
@@ -721,9 +724,10 @@ make_suite_all_tests()
   s->addTestCase(new TC_Basic01());
   s->addTestCase(new TC_Basic02());
 
-#if 0
   s->addTestCase(new TC_Tokens01());
   s->addTestCase(new TC_Tokens02());
+
+#if 0
   s->addTestCase(new TC_Tokens03());
   s->addTestCase(new TC_Tokens04());
   s->addTestCase(new TC_Tokens05());

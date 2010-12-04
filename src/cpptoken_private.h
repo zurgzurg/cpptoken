@@ -95,7 +95,8 @@ class Alloc  {
   }
 
   void deallocate (pointer p, size_type num) {
-    ::operator delete((void*)p);
+    //  ::operator delete((void*)p);
+    this->mc->deallocate(p, num * sizeof(T));
   }
 
   ////////
