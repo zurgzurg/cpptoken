@@ -49,7 +49,7 @@ MemoryControl::allocate(size_t sz)
 }
 
 void
-MemoryControl::dellocate(void *ptr, size_t sz)
+MemoryControl::deallocate(void *ptr, size_t sz)
 {
   free(ptr);
 }
