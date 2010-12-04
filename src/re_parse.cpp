@@ -41,18 +41,8 @@ using namespace std;
 #include "cpptoken_private.h"
 using namespace cpptoken;
 
-#if 0
-/********************************/
-REToken::REToken(TokType tt, uchar c)
-{
-  this->m_ttype = tt;
-  this->u.m_ch = c;
-}
-#endif
-
-/********************************/
-
-TokenList::TokenList(const char *regex)
+TokenList::TokenList(Alloc<REToken *> obj, const char *regex)
+  : m_toks(obj)
 {
   this->m_toks.clear();
   size_t len = strlen(regex);

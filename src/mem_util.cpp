@@ -1,6 +1,3 @@
-#ifndef _CPPTOKEN_H_
-#define _CPPTOKEN_H_
-
 // Copyright (c) 2010, Ram Bhamidipaty
 // All rights reserved.
 // 
@@ -33,44 +30,26 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace cpptoken {
+#include <cstdlib>
 
-class MemoryControl {
- public:
-  virtual void *allocate(size_t);
-  virtual void dellocate(void *, size_t);
-};
+#include <memory>
+#include <limits>
+#include <list>
+using namespace std;
 
-class SyntaxError : public std::exception {
-  private:
-    size_t m_errIdx;
-    const char *m_reason;
+#include "cpptoken.h"
+#include "cpptoken_private.h"
+using namespace cpptoken;
 
-  public:
-    SyntaxError(size_t idx, const char *msg)
-      : std::exception(),
-        m_errIdx(idx),
-        m_reason(msg) {;};
-
-    size_t getErrorIndex() const throw();
-};
-
-class Buffer {
- private:
-  
- public:
-  Buffer();
-};
-
-class Lexer {
- private:
-
- public:
-  Lexer();
-
- private:
-};
-
+void *
+MemoryControl::allocate(size_t sz)
+{
+  void *ret = malloc(sz);
+  return ret;
 }
 
-#endif
+void
+MemoryControl::dellocate(void *ptr, size_t sz)
+{
+  free(ptr);
+}
