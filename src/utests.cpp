@@ -742,21 +742,25 @@ TC_MemFail01::run()
 
 class MemoryControlWithFailure : public MemoryControl {
  public:
-  size_t  n_allocs;
-  size_t  n_deallocs;
+  size_t  m_numAllocs;
+  size_t  m_numDeallocs;
 
   bool    use_limit;
   size_t  limit;
 
   virtual void *allocate(size_t);
   virtual void deallocate(void *, size_t);
+
+  void resetCounters();
+  void disableLimit();
+  void setLimit(size_t);
 };
 
 void *
 MemoryControlWithFailure::allocate(size_t sz)
 {
-  this->n_allocs++;
-  if (this->use_limit && this->n_allocs > this->limit)
+  this->m_numAllocs++;
+  if (this->use_limit && this->m_numAllocs > this->limit)
     throw bad_alloc();
   void *ptr = ::operator new(sz);
   return ptr;
@@ -765,9 +769,32 @@ MemoryControlWithFailure::allocate(size_t sz)
 void
 MemoryControlWithFailure::deallocate(void *ptr, size_t sz)
 {
-  this->n_deallocs++;
+  this->m_numDeallocs++;
   ::operator delete(ptr);
 }
+
+void
+MemoryControlWithFailure::resetCounters()
+{
+  this->m_numAllocs = 0;
+  this->m_numDeallocs = 0;
+}
+
+void
+MemoryControlWithFailure::disableLimit()
+{
+  this->use_limit = false;
+  this->limit = 0;
+}
+
+void
+MemoryControlWithFailure::setLimit(size_t l)
+{
+  this->use_limit = true;
+  this->limit = l;
+}
+
+/********************/
 
 struct TC_MemFail02 : public TestCase {
   TC_MemFail02() : TestCase("TC_MemFail02") {;};
@@ -778,9 +805,8 @@ void
 TC_MemFail02::run()
 {
   MemoryControlWithFailure mc;
-  mc.n_allocs = 0;
-  mc.n_deallocs = 0;
-  mc.use_limit = false;
+  mc.resetCounters();
+  mc.disableLimit();
   Alloc<REToken *> alloc;
   alloc.setMC(&mc);
 
@@ -788,16 +814,14 @@ TC_MemFail02::run()
     TokenList tlist(alloc, "a");
   }
 
-  cout << "num allocs=" << mc.n_allocs << "\n";
-  cout << "num deallocs=" << mc.n_deallocs << "\n";
+  cout << "num allocs=" << mc.m_numAllocs << "\n";
+  cout << "num deallocs=" << mc.m_numDeallocs << "\n";
 
-  size_t n_allocs = mc.n_allocs;
-  for (size_t lim = 0; lim < n_allocs; lim++) {
+  size_t m_numAllocs = mc.m_numAllocs;
+  for (size_t lim = 0; lim < m_numAllocs; lim++) {
 
-    mc.n_allocs = 0;
-    mc.n_deallocs = 0;
-    mc.use_limit = true;
-    mc.limit = lim;
+    mc.resetCounters();
+    mc.setLimit(lim);
     cout << "alloc with lim=" << lim << "\n";
 
     try {
@@ -812,6 +836,101 @@ TC_MemFail02::run()
 
   this->setStatus(true);
 }
+
+/********************/
+
+struct TC_MemFail03 : public TestCase {
+  TC_MemFail03() : TestCase("TC_MemFail03") {;};
+  void run();
+};
+
+void
+TC_MemFail03::run()
+{
+  MemoryControlWithFailure mc;
+  mc.resetCounters();
+  mc.disableLimit();
+  Alloc<REToken *> alloc;
+  alloc.setMC(&mc);
+
+  {
+    TokenList tlist(alloc, "[a-z]");
+  }
+
+  cout << "num allocs=" << mc.m_numAllocs << "\n";
+  cout << "num deallocs=" << mc.m_numDeallocs << "\n";
+
+  size_t m_numAllocs = mc.m_numAllocs;
+  for (size_t lim = 0; lim < m_numAllocs; lim++) {
+
+    mc.resetCounters();
+    mc.setLimit(lim);
+    cout << "alloc with lim=" << lim << "\n";
+
+    try {
+      TokenList tlist(alloc, "[a-z]");
+      ASSERT_TRUE(false);
+    }
+    catch (const bad_alloc &e) {
+      cout << "got one out of mem exception\n";
+      ASSERT_TRUE(true);
+    }
+  }
+
+  this->setStatus(true);
+}
+
+/********************/
+
+#if 0
+struct TC_MemFail04 : public TestCase {
+  TC_MemFail04() : TestCase("TC_MemFail04") {;};
+  void checkOneRegex(Alloc<REToken *>& alloc, const char *re);
+  void run();
+};
+
+void
+TC_MemFail04::checkOneRegex(Alloc<REToken *>& alloc, const char *re)
+{
+  
+}
+
+void
+TC_MemFail04::run()
+{
+  MemoryControlWithFailure mc;
+  mc.resetCounters();
+  mc.disableLimit();
+  Alloc<REToken *> alloc;
+  alloc.setMC(&mc);
+
+  {
+    TokenList tlist(alloc, "[a-z]");
+  }
+
+  cout << "num allocs=" << mc.m_numAllocs << "\n";
+  cout << "num deallocs=" << mc.m_numDeallocs << "\n";
+
+  size_t m_numAllocs = mc.m_numAllocs;
+  for (size_t lim = 0; lim < m_numAllocs; lim++) {
+
+    mc.resetCounters();
+    mc.setLimit(lim);
+    cout << "alloc with lim=" << lim << "\n";
+
+    try {
+      TokenList tlist(alloc, "[a-z]");
+      ASSERT_TRUE(false);
+    }
+    catch (const bad_alloc &e) {
+      cout << "got one out of mem exception\n";
+      ASSERT_TRUE(true);
+    }
+  }
+
+  this->setStatus(true);
+}
+#endif
 
 /****************************************************/
 /* top level                                        */
@@ -837,6 +956,7 @@ make_suite_all_tests()
 
   s->addTestCase(new TC_MemFail01());
   s->addTestCase(new TC_MemFail02());
+  s->addTestCase(new TC_MemFail03());
 
   return s;
 }

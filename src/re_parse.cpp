@@ -35,14 +35,27 @@
 #include <memory>
 #include <limits>
 #include <list>
+#include <iostream>
 using namespace std;
 
 #include "cpptoken.h"
 #include "cpptoken_private.h"
 using namespace cpptoken;
 
+/********************************************************/
+REToken::REToken(TokenList *tlist, TokType tt, uchar c)
+  : m_ttype(tt)
+{
+  this->u.m_ch = c;
+
+  this->m_next = tlist->m_allREToks;
+  tlist->m_allREToks = this;
+}
+
+
+/********************************************************/
 TokenList::TokenList(Alloc<REToken *> obj, const char *regex)
-  : m_toks(obj)
+  : m_toks(obj), m_allREToks(NULL)
 {
   this->m_toks.clear();
   size_t len = strlen(regex);
@@ -50,39 +63,29 @@ TokenList::TokenList(Alloc<REToken *> obj, const char *regex)
     this->build(regex, 0, len);
   }
   catch (const SyntaxError &e) {
-    if (!this->m_toks.empty()) {
-      TokList::iterator iter;
-      iter = this->m_toks.begin();
-      while (iter != this->m_toks.end()) {
-	if ((*iter)->m_ttype == TT_CHAR_CLASS)
-	  delete (*iter)->u.m_charClass;
-	delete *iter;
-	iter++;
-      }
-    }
+    this->freeRETokens(this->m_allREToks);
+    throw;
+  }
+  catch (const bad_alloc &e) {
+    this->freeRETokens(this->m_allREToks);
     throw;
   }
 }
 
 TokenList::TokenList(Alloc<REToken *> obj, const char *regex,
 		     size_t start, size_t len)
-  : m_toks(obj)
+  : m_toks(obj), m_allREToks(NULL)
 {
   this->m_toks.clear();
   try {
     this->build(regex, start, len);
   }
   catch (const SyntaxError &e) {
-    if (!this->m_toks.empty()) {
-      TokList::iterator iter;
-      iter = this->m_toks.begin();
-      while (iter != this->m_toks.end()) {
-	if ((*iter)->m_ttype == TT_CHAR_CLASS)
-	  delete (*iter)->u.m_charClass;
-	delete *iter;
-	iter++;
-      }
-    }
+    this->freeRETokens(this->m_allREToks);
+    throw;
+  }
+  catch (const bad_alloc &e) {
+    this->freeRETokens(this->m_allREToks);
     throw;
   }
 }
@@ -90,17 +93,20 @@ TokenList::TokenList(Alloc<REToken *> obj, const char *regex,
 
 TokenList::~TokenList()
 {
-  if (!this->m_toks.empty()) {
-    TokList::iterator iter;
-    iter = this->m_toks.begin();
-    while (iter != this->m_toks.end()) {
-      if ((*iter)->m_ttype == TT_CHAR_CLASS)
-	delete (*iter)->u.m_charClass;
-      delete *iter;
-      iter++;
-    }
-  }
+  this->freeRETokens(this->m_allREToks);
   return;
+}
+
+void
+TokenList::freeRETokens(REToken *ptr)
+{
+  while (ptr != NULL) {
+    REToken *tmp = ptr->m_next;
+    if (ptr->m_ttype == TT_CHAR_CLASS)
+      delete ptr->u.m_charClass;
+    delete ptr;
+    ptr = tmp;
+  }
 }
 
 /*******************************************************/
@@ -210,7 +216,7 @@ TokenList::buildQuantifier(const uchar *start, const uchar *ptr,
   }
 
   if (ch == '}') {
-    tok = new REToken(TT_QUANTIFIER);
+    tok = new REToken(this, TT_QUANTIFIER);
     tok->u.quant.m_v1 = v1;
     tok->u.quant.m_v2 = 0;
     tok->u.quant.m_v1Valid = true;
@@ -244,7 +250,7 @@ TokenList::buildQuantifier(const uchar *start, const uchar *ptr,
   }
 
   if (ch == '}') {
-    tok = new REToken(TT_QUANTIFIER);
+    tok = new REToken(this, TT_QUANTIFIER);
     tok->u.quant.m_v1 = v1;
     tok->u.quant.m_v2 = v2;
     tok->u.quant.m_v1Valid = v1_found;
@@ -372,7 +378,7 @@ TokenList::addRange(bool invert, list<uchar> *chars)
 {
   list<uchar> *clist;
 
-  REToken *tok = new REToken(TT_CHAR_CLASS);
+  REToken *tok = new REToken(this, TT_CHAR_CLASS);
 
   if (invert) {
     clist = this->computeInverseRange(chars);
@@ -416,7 +422,7 @@ TokenList::computeInverseRange(const list<uchar> *src)
 void
 TokenList::simpleAddToken(TokType tp, uchar ch)
 {
-  REToken *tok = new REToken(tp, ch);
+  REToken *tok = new REToken(this, tp, ch);
   this->m_toks.push_back(tok);
   return;
 }
@@ -425,14 +431,8 @@ void
 TokenList::addTokenAndMaybeCcat(TokType tp, uchar ch)
 {
   this->maybeAddCcat(tp);
-  REToken *tok = new REToken(tp, ch);
-  try {
-    this->m_toks.push_back(tok);
-  }
-  catch (const bad_alloc &e) {
-    delete tok;
-    throw;
-  }
+  REToken *tok = new REToken(this, tp, ch);
+  this->m_toks.push_back(tok);
   return;
 }
 
@@ -452,7 +452,7 @@ TokenList::maybeAddCcat(TokType cur_tp)
 
   switch (tok->m_ttype) {
   case TT_SELF_CHAR:
-    tok = new REToken(TT_CCAT);
+    tok = new REToken(this, TT_CCAT);
     this->m_toks.push_back(tok);
     break;
   default:

@@ -148,7 +148,10 @@ struct RETokQuantifier {
   size_t m_v2;
 };
 
+struct TokenList;
+
 struct REToken {
+  REToken *m_next; // chain of all objs
   TokType m_ttype;
   union {
     uchar m_ch;
@@ -156,7 +159,7 @@ struct REToken {
     RETokQuantifier quant;
   } u;
     
-  REToken(TokType tt, uchar c='\0') : m_ttype(tt) {this->u.m_ch = c;};
+  REToken(TokenList *, TokType tt, uchar c='\0');
 };
 
 /********************************/
@@ -167,6 +170,7 @@ struct TokenList {
 
   TokList  m_toks;
   TokList::iterator m_iter;
+  REToken *m_allREToks;
 
   TokenList(Alloc<REToken *>, const char *);
   TokenList(Alloc<REToken *>, const char *, size_t idx, size_t len);
@@ -197,6 +201,8 @@ private:
   void simpleAddToken(TokType, uchar = '\0');
   void addTokenAndMaybeCcat(TokType, uchar = '\0');
   void maybeAddCcat(TokType);
+
+  void freeRETokens(REToken *);
 };
 
 
