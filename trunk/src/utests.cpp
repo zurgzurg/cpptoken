@@ -896,6 +896,8 @@ TC_MemFail04::checkOneRegex(MemoryControlWithFailure &mc,
 			    const char *regex)
 {
   {
+    mc.resetCounters();
+    mc.disableLimit();
     TokenList tlist(alloc, regex);
   }
   
@@ -925,9 +927,9 @@ TC_MemFail04::run()
   alloc.setMC(&mc);
 
   this->checkOneRegex(mc, alloc, "abc");
+  this->checkOneRegex(mc, alloc, "a{2,10}");
   this->checkOneRegex(mc, alloc, "a");
   this->checkOneRegex(mc, alloc, "a{2}");
-  this->checkOneRegex(mc, alloc, "a{2,10}");
 
   this->setStatus(true);
 }
@@ -957,6 +959,7 @@ make_suite_all_tests()
   s->addTestCase(new TC_MemFail01());
   s->addTestCase(new TC_MemFail02());
   s->addTestCase(new TC_MemFail03());
+  s->addTestCase(new TC_MemFail04());
 
   return s;
 }
