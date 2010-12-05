@@ -882,17 +882,37 @@ TC_MemFail03::run()
 
 /********************/
 
-#if 0
 struct TC_MemFail04 : public TestCase {
   TC_MemFail04() : TestCase("TC_MemFail04") {;};
-  void checkOneRegex(Alloc<REToken *>& alloc, const char *re);
+  void checkOneRegex(MemoryControlWithFailure &,
+		     Alloc<REToken *>& alloc,
+		     const char *re);
   void run();
 };
 
 void
-TC_MemFail04::checkOneRegex(Alloc<REToken *>& alloc, const char *re)
+TC_MemFail04::checkOneRegex(MemoryControlWithFailure &mc,
+			    Alloc<REToken *>& alloc,
+			    const char *regex)
 {
+  {
+    TokenList tlist(alloc, regex);
+  }
   
+  size_t m_numAllocs = mc.m_numAllocs;
+  for (size_t lim = 0; lim < m_numAllocs; lim++) {
+
+    mc.resetCounters();
+    mc.setLimit(lim);
+
+    try {
+      TokenList tlist(alloc, regex);
+      ASSERT_TRUE(false);
+    }
+    catch (const bad_alloc &e) {
+      ASSERT_TRUE(true);
+    }
+  }
 }
 
 void
@@ -904,33 +924,13 @@ TC_MemFail04::run()
   Alloc<REToken *> alloc;
   alloc.setMC(&mc);
 
-  {
-    TokenList tlist(alloc, "[a-z]");
-  }
-
-  cout << "num allocs=" << mc.m_numAllocs << "\n";
-  cout << "num deallocs=" << mc.m_numDeallocs << "\n";
-
-  size_t m_numAllocs = mc.m_numAllocs;
-  for (size_t lim = 0; lim < m_numAllocs; lim++) {
-
-    mc.resetCounters();
-    mc.setLimit(lim);
-    cout << "alloc with lim=" << lim << "\n";
-
-    try {
-      TokenList tlist(alloc, "[a-z]");
-      ASSERT_TRUE(false);
-    }
-    catch (const bad_alloc &e) {
-      cout << "got one out of mem exception\n";
-      ASSERT_TRUE(true);
-    }
-  }
+  this->checkOneRegex(mc, alloc, "abc");
+  this->checkOneRegex(mc, alloc, "a");
+  this->checkOneRegex(mc, alloc, "a{2}");
+  this->checkOneRegex(mc, alloc, "a{2,10}");
 
   this->setStatus(true);
 }
-#endif
 
 /****************************************************/
 /* top level                                        */
