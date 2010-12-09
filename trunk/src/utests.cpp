@@ -814,22 +814,17 @@ TC_MemFail02::run()
     TokenList tlist(alloc, "a");
   }
 
-  cout << "num allocs=" << mc.m_numAllocs << "\n";
-  cout << "num deallocs=" << mc.m_numDeallocs << "\n";
-
-  size_t m_numAllocs = mc.m_numAllocs;
-  for (size_t lim = 0; lim < m_numAllocs; lim++) {
+  size_t numAllocs = mc.m_numAllocs;
+  for (size_t lim = 0; lim < numAllocs; lim++) {
 
     mc.resetCounters();
     mc.setLimit(lim);
-    cout << "alloc with lim=" << lim << "\n";
 
     try {
       TokenList tlist(alloc, "a");
       ASSERT_TRUE(false);
     }
     catch (const bad_alloc &e) {
-      cout << "got one out of mem exception\n";
       ASSERT_TRUE(true);
     }
   }
@@ -857,22 +852,17 @@ TC_MemFail03::run()
     TokenList tlist(alloc, "[a-z]");
   }
 
-  cout << "num allocs=" << mc.m_numAllocs << "\n";
-  cout << "num deallocs=" << mc.m_numDeallocs << "\n";
-
-  size_t m_numAllocs = mc.m_numAllocs;
-  for (size_t lim = 0; lim < m_numAllocs; lim++) {
+  size_t numAllocs = mc.m_numAllocs;
+  for (size_t lim = 0; lim < numAllocs; lim++) {
 
     mc.resetCounters();
     mc.setLimit(lim);
-    cout << "alloc with lim=" << lim << "\n";
 
     try {
       TokenList tlist(alloc, "[a-z]");
       ASSERT_TRUE(false);
     }
     catch (const bad_alloc &e) {
-      cout << "got one out of mem exception\n";
       ASSERT_TRUE(true);
     }
   }
@@ -901,8 +891,8 @@ TC_MemFail04::checkOneRegex(MemoryControlWithFailure &mc,
     TokenList tlist(alloc, regex);
   }
   
-  size_t m_numAllocs = mc.m_numAllocs;
-  for (size_t lim = 0; lim < m_numAllocs; lim++) {
+  size_t numAllocs = mc.m_numAllocs;
+  for (size_t lim = 0; lim < numAllocs; lim++) {
 
     mc.resetCounters();
     mc.setLimit(lim);

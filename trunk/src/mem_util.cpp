@@ -35,6 +35,7 @@
 #include <memory>
 #include <limits>
 #include <list>
+#include <iostream>
 using namespace std;
 
 #include "cpptoken.h"

@@ -46,7 +46,36 @@ using namespace cpptoken;
 REToken::REToken(TokenList *tlist, TokType tt, uchar c)
   : m_ttype(tt)
 {
-  this->u.m_ch = c;
+  switch (tt) {
+  case TT_SELF_CHAR:
+    this->u.m_ch = c;
+    break;
+
+  case TT_CCAT:
+  case TT_PIPE:
+  case TT_STAR:
+  case TT_DOT:
+  case TT_QMARK:
+  case TT_LBRACE:
+  case TT_RBRACE:
+  case TT_LPAREN:
+  case TT_RPAREN:
+    break;
+
+  case TT_CHAR_CLASS:
+    this->u.m_charClass = NULL;
+    break;
+
+  case TT_QUANTIFIER:
+    this->u.quant.m_v1Valid = false;
+    this->u.quant.m_v2Valid = false;
+    this->u.quant.m_v1 = 0;
+    this->u.quant.m_v2 = 0;
+    break;
+
+  case TT_num:
+    break;
+  }
 
   this->m_next = tlist->m_allREToks;
   tlist->m_allREToks = this;
@@ -55,7 +84,10 @@ REToken::REToken(TokenList *tlist, TokType tt, uchar c)
 
 /********************************************************/
 TokenList::TokenList(Alloc<REToken *> obj, const char *regex)
-  : m_toks(obj), m_allREToks(NULL)
+  : m_toks(obj),
+    m_allREToks(NULL),
+    m_tmpCharList(NULL),
+    m_tmpInvCharList(NULL)
 {
   this->m_toks.clear();
   size_t len = strlen(regex);
@@ -63,29 +95,32 @@ TokenList::TokenList(Alloc<REToken *> obj, const char *regex)
     this->build(regex, 0, len);
   }
   catch (const SyntaxError &e) {
-    this->freeRETokens(this->m_allREToks);
+    this->undoContructor(this->m_allREToks);
     throw;
   }
   catch (const bad_alloc &e) {
-    this->freeRETokens(this->m_allREToks);
+    this->undoContructor(this->m_allREToks);
     throw;
   }
 }
 
 TokenList::TokenList(Alloc<REToken *> obj, const char *regex,
 		     size_t start, size_t len)
-  : m_toks(obj), m_allREToks(NULL)
+  : m_toks(obj),
+    m_allREToks(NULL),
+    m_tmpCharList(NULL),
+    m_tmpInvCharList(NULL)
 {
   this->m_toks.clear();
   try {
     this->build(regex, start, len);
   }
   catch (const SyntaxError &e) {
-    this->freeRETokens(this->m_allREToks);
+    this->undoContructor(this->m_allREToks);
     throw;
   }
   catch (const bad_alloc &e) {
-    this->freeRETokens(this->m_allREToks);
+    this->undoContructor(this->m_allREToks);
     throw;
   }
 }
@@ -93,19 +128,29 @@ TokenList::TokenList(Alloc<REToken *> obj, const char *regex,
 
 TokenList::~TokenList()
 {
-  this->freeRETokens(this->m_allREToks);
+  this->undoContructor(this->m_allREToks);
   return;
 }
 
 void
-TokenList::freeRETokens(REToken *ptr)
+TokenList::undoContructor(REToken *ptr)
 {
   while (ptr != NULL) {
     REToken *tmp = ptr->m_next;
-    if (ptr->m_ttype == TT_CHAR_CLASS)
+    if (ptr->m_ttype == TT_CHAR_CLASS && ptr->u.m_charClass)
       delete ptr->u.m_charClass;
     delete ptr;
     ptr = tmp;
+  }
+
+  if (this->m_tmpCharList) {
+    delete this->m_tmpCharList;
+    this->m_tmpCharList = NULL;
+  }
+
+  if (this->m_tmpInvCharList) {
+    delete this->m_tmpInvCharList;
+    this->m_tmpInvCharList = NULL;
   }
 }
 
@@ -267,11 +312,12 @@ const uchar *
 TokenList::buildCharClass(const uchar *start, const uchar *ptr,
 			  const uchar *last_valid)
 {
-  list<uchar> *tmp = new list<uchar>;
   uchar prev, cur;
   const uchar *char_class_start;
   int state;
   bool is_invert = false, close_found = false;
+
+  this->m_tmpCharList = new REToken::UCharList(this->m_toks.get_allocator());
 
   char_class_start = ptr;
   ptr++;
@@ -288,7 +334,7 @@ TokenList::buildCharClass(const uchar *start, const uchar *ptr,
     if (state == 0) {
       /* zero state - go nothing */
       if (cur == '-') {
-	tmp->push_back(cur);
+	this->m_tmpCharList->push_back(cur);
 	ptr++;
       }
       else if (cur == ']') {
@@ -312,12 +358,12 @@ TokenList::buildCharClass(const uchar *start, const uchar *ptr,
       }
       else if (cur == ']') {
 	close_found = true;
-	tmp->push_back(prev);
+	this->m_tmpCharList->push_back(prev);
 	ptr++;
 	break;
       }
       else {
-	tmp->push_back(prev);
+	this->m_tmpCharList->push_back(prev);
 	ptr++;
 	prev = cur;
       }
@@ -328,13 +374,13 @@ TokenList::buildCharClass(const uchar *start, const uchar *ptr,
       /* maybe got a real range */
       if (cur == ']') {
 	close_found = true;
-	tmp->push_back(prev);
-	tmp->push_back('-');
+	this->m_tmpCharList->push_back(prev);
+	this->m_tmpCharList->push_back('-');
 	ptr++;
 	break;
       }
       else {
-	this->addToCharClass(tmp, prev, cur);
+	this->addToCharClass(this->m_tmpCharList, prev, cur);
 	ptr++;
 	state = 0;
       }
@@ -343,18 +389,19 @@ TokenList::buildCharClass(const uchar *start, const uchar *ptr,
   }
 
   if (!close_found) {
-    delete tmp;
+    delete this->m_tmpCharList;
+    this->m_tmpCharList = NULL;
     size_t idx = char_class_start - start;
     throw SyntaxError(idx, "Unterminated char class");
   }
 
-  this->addRange(is_invert, tmp);
+  this->addRange(is_invert);
 
   return ptr;
 }
 
 void
-TokenList::addToCharClass(list<uchar>  *c_class, uchar v1, uchar v2)
+TokenList::addToCharClass(REToken::UCharList  *c_class, uchar v1, uchar v2)
 {
   uchar lim1, lim2, code;
 
@@ -374,49 +421,53 @@ TokenList::addToCharClass(list<uchar>  *c_class, uchar v1, uchar v2)
 }
 
 void
-TokenList::addRange(bool invert, list<uchar> *chars)
+TokenList::addRange(bool invert)
 {
-  list<uchar> *clist;
-
   REToken *tok = new REToken(this, TT_CHAR_CLASS);
 
   if (invert) {
-    clist = this->computeInverseRange(chars);
-    tok->u.m_charClass = clist;
-    delete chars;
+    this->createInverseRange();
+    this->m_toks.push_back(tok);
+    tok->u.m_charClass = this->m_tmpInvCharList;
+    this->m_tmpInvCharList = NULL;
   }
   else {
-    tok->u.m_charClass = chars;
+    this->m_toks.push_back(tok);
+    tok->u.m_charClass = this->m_tmpCharList;
+    this->m_tmpCharList = NULL;
   }
-
-  this->m_toks.push_back(tok);
 
   return;
 }
 
-list<uchar> *
-TokenList::computeInverseRange(const list<uchar> *src)
+void
+TokenList::createInverseRange()
 {
   unsigned char buf[256];
   
   for (int i = 0; i < 256; i++)
     buf[i] = 0;
 
-  list<uchar>::const_iterator src_pos = src->begin();
-  while (src_pos != src->end()) {
+  REToken::UCharList::const_iterator src_pos;
+  src_pos = this->m_tmpCharList->begin();
+  while (src_pos != this->m_tmpCharList->end()) {
     uchar ch = *src_pos;
     buf[ (unsigned int)ch ] = 1;
     src_pos++;
   }
 
-  list<uchar> *result = new list<uchar>;
+  delete this->m_tmpCharList;
+  this->m_tmpCharList = NULL;
+
+  this->m_tmpInvCharList =
+    new REToken::UCharList(this->m_toks.get_allocator());
 
   for (int i = 0; i < 256; i++) {
     if (buf[i] == 0)
-      result->push_back( (uchar) i );
+      this->m_tmpInvCharList->push_back( (uchar) i );
   }
 
-  return result;
+  return;
 }
 
 void
@@ -504,7 +555,7 @@ TokenList::verifyCharClassMember(uchar exp)
   REToken *tok = *this->m_iter;
   if (tok->m_ttype != TT_CHAR_CLASS)
     return false;
-  list<uchar>::iterator iter = tok->u.m_charClass->begin();
+  REToken::UCharList::iterator iter = tok->u.m_charClass->begin();
   while (iter != tok->u.m_charClass->end()) {
     if (*iter == exp)
       return true;
@@ -553,7 +604,7 @@ TokenList::verifyNextCharClass(const char *exp, size_t n_exp)
   for (size_t i = 0; i < n_exp; i++) {
     char exp_ch = exp[i];
     bool found = false;
-    list<uchar>::const_iterator ch_iter = tok->u.m_charClass->begin();
+    REToken::UCharList::const_iterator ch_iter = tok->u.m_charClass->begin();
     while (ch_iter != tok->u.m_charClass->end()) {
       uchar act_ch = *ch_iter;
       if ((uchar)exp_ch == act_ch) {

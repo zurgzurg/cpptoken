@@ -59,15 +59,16 @@ class Buffer {
  private:
   
  public:
-  Buffer();
+  Buffer(MemoryControl *);
 };
 
 class Lexer {
  private:
 
  public:
-  Lexer();
+  Lexer(MemoryControl *);
 
+  
  private:
 };
 
