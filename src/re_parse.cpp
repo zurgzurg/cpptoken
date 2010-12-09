@@ -67,10 +67,10 @@ REToken::REToken(TokenList *tlist, TokType tt, uchar c)
     break;
 
   case TT_QUANTIFIER:
-    this->u.quant.m_v1Valid = false;
-    this->u.quant.m_v2Valid = false;
-    this->u.quant.m_v1 = 0;
-    this->u.quant.m_v2 = 0;
+    this->u.m_quant.m_v1Valid = false;
+    this->u.m_quant.m_v2Valid = false;
+    this->u.m_quant.m_v1 = 0;
+    this->u.m_quant.m_v2 = 0;
     break;
 
   case TT_num:
@@ -262,10 +262,10 @@ TokenList::buildQuantifier(const uchar *start, const uchar *ptr,
 
   if (ch == '}') {
     tok = new REToken(this, TT_QUANTIFIER);
-    tok->u.quant.m_v1 = v1;
-    tok->u.quant.m_v2 = 0;
-    tok->u.quant.m_v1Valid = true;
-    tok->u.quant.m_v2Valid = false;
+    tok->u.m_quant.m_v1 = v1;
+    tok->u.m_quant.m_v2 = 0;
+    tok->u.m_quant.m_v1Valid = true;
+    tok->u.m_quant.m_v2Valid = false;
     this->m_toks.push_back(tok);
     ptr++;
     return ptr;
@@ -296,10 +296,10 @@ TokenList::buildQuantifier(const uchar *start, const uchar *ptr,
 
   if (ch == '}') {
     tok = new REToken(this, TT_QUANTIFIER);
-    tok->u.quant.m_v1 = v1;
-    tok->u.quant.m_v2 = v2;
-    tok->u.quant.m_v1Valid = v1_found;
-    tok->u.quant.m_v2Valid = v2_found;
+    tok->u.m_quant.m_v1 = v1;
+    tok->u.m_quant.m_v2 = v2;
+    tok->u.m_quant.m_v1Valid = v1_found;
+    tok->u.m_quant.m_v2Valid = v2_found;
     this->m_toks.push_back(tok);
     ptr++;
     return ptr;
@@ -635,16 +635,16 @@ TokenList::verifyNextQuantifier(bool v1v, size_t v1, bool v2v, size_t v2)
   if (tok->m_ttype != TT_QUANTIFIER)
     return false;
   
-  if (v1v != tok->u.quant.m_v1Valid)
+  if (v1v != tok->u.m_quant.m_v1Valid)
     return false;
 
-  if (v2v != tok->u.quant.m_v2Valid)
+  if (v2v != tok->u.m_quant.m_v2Valid)
     return false;
   
-  if (v1v == true && tok->u.quant.m_v1 != v1)
+  if (v1v == true && tok->u.m_quant.m_v1 != v1)
     return false;
 
-  if (v2v == true && tok->u.quant.m_v2 != v2)
+  if (v2v == true && tok->u.m_quant.m_v2 != v2)
     return false;
 
   return true;

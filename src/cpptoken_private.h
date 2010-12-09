@@ -158,7 +158,7 @@ struct REToken {
   union {
     uchar m_ch;
     UCharList *m_charClass;
-    RETokQuantifier quant;
+    RETokQuantifier m_quant;
   } u;
     
   REToken(TokenList *, TokType tt, uchar c='\0');
