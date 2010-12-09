@@ -95,7 +95,6 @@ class Alloc  {
   }
 
   void deallocate (pointer p, size_type num) {
-    //  ::operator delete((void*)p);
     this->mc->deallocate(p, num * sizeof(T));
   }
 
@@ -141,6 +140,7 @@ enum TokType {
 typedef unsigned char uchar;
 
 /********************************/
+
 struct RETokQuantifier {
   bool m_v1Valid;
   bool m_v2Valid;
@@ -151,11 +151,13 @@ struct RETokQuantifier {
 struct TokenList;
 
 struct REToken {
+  typedef list<uchar, Alloc<uchar> > UCharList;
+
   REToken *m_next; // chain of all objs
   TokType m_ttype;
   union {
     uchar m_ch;
-    list<uchar> *m_charClass;
+    UCharList *m_charClass;
     RETokQuantifier quant;
   } u;
     
@@ -164,13 +166,14 @@ struct REToken {
 
 /********************************/
 
-
 struct TokenList {
   typedef list<REToken *, Alloc<REToken *> > TokList;
 
   TokList  m_toks;
   TokList::iterator m_iter;
   REToken *m_allREToks;
+  REToken::UCharList *m_tmpCharList;
+  REToken::UCharList *m_tmpInvCharList;
 
   TokenList(Alloc<REToken *>, const char *);
   TokenList(Alloc<REToken *>, const char *, size_t idx, size_t len);
@@ -194,15 +197,15 @@ private:
   const uchar *buildQuantifier(const uchar *, const uchar *, const uchar *);
 
   const uchar *buildCharClass(const uchar *, const uchar *, const uchar *);
-  void addRange(bool invert, list<uchar> *);
-  void addToCharClass(list<uchar>  *, uchar, uchar);
-  list<uchar> *computeInverseRange(const list<uchar> *src);
+  void addRange(bool invert);
+  void addToCharClass(REToken::UCharList  *, uchar, uchar);
+  void createInverseRange();
 
   void simpleAddToken(TokType, uchar = '\0');
   void addTokenAndMaybeCcat(TokType, uchar = '\0');
   void maybeAddCcat(TokType);
 
-  void freeRETokens(REToken *);
+  void undoContructor(REToken *);
 };
 
 

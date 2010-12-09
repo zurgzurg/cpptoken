@@ -36,10 +36,10 @@
 
 #include "cpptoken.h"
 
-cpptoken::Buffer::Buffer()
+cpptoken::Buffer::Buffer(MemoryControl *)
 {
 }
 
-cpptoken::Lexer::Lexer()
+cpptoken::Lexer::Lexer(MemoryControl *)
 {
 }
