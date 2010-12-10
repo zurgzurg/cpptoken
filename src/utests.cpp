@@ -926,6 +926,69 @@ TC_MemFail04::run()
   this->setStatus(true);
 }
 
+/********************/
+
+struct TC_MemFail05 : public TestCase {
+  TC_MemFail05() : TestCase("TC_MemFail05") {;};
+  void expectFailure(MemoryControlWithFailure &,
+		     Alloc<REToken *>& alloc,
+		     const char *re);
+  void run();
+};
+
+void
+TC_MemFail05::expectFailure(MemoryControlWithFailure &mc,
+			    Alloc<REToken *>& alloc,
+			    const char *regex)
+{
+  {
+    mc.resetCounters();
+    mc.disableLimit();
+    try {
+      TokenList tlist(&mc, alloc, regex);
+      ASSERT_TRUE(false);
+    }
+    catch (const SyntaxError &e) {
+      ASSERT_TRUE(true);
+    }
+  }
+  
+  size_t numAllocs = mc.m_numAllocs;
+  for (size_t lim = 0; lim < numAllocs; lim++) {
+
+    mc.resetCounters();
+    mc.setLimit(lim);
+
+    try {
+      TokenList tlist(&mc, alloc, regex);
+      ASSERT_TRUE(false);
+    }
+    catch (const bad_alloc &e) {
+      ASSERT_TRUE(true);
+    }
+    catch (const SyntaxError &e) {
+      ASSERT_TRUE(true);
+    }
+  }
+}
+
+void
+TC_MemFail05::run()
+{
+  MemoryControlWithFailure mc;
+  mc.resetCounters();
+  mc.disableLimit();
+  Alloc<REToken *> alloc;
+  alloc.setMC(&mc);
+
+  this->expectFailure(mc, alloc, "{2 2}");
+  this->expectFailure(mc, alloc, "{2 - }");
+  this->expectFailure(mc, alloc, "{999999999999999999999999999999999");
+  this->expectFailure(mc, alloc, "a{2,99999999999999999999999999999999999}");
+
+  this->setStatus(true);
+}
+
 /****************************************************/
 /* top level                                        */
 /****************************************************/
@@ -952,6 +1015,7 @@ make_suite_all_tests()
   s->addTestCase(new TC_MemFail02());
   s->addTestCase(new TC_MemFail03());
   s->addTestCase(new TC_MemFail04());
+  s->addTestCase(new TC_MemFail05());
 
   return s;
 }
