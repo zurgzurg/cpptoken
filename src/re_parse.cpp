@@ -81,10 +81,25 @@ REToken::REToken(TokenList *tlist, TokType tt, uchar c)
   tlist->m_allREToks = this;
 }
 
+static void *
+REToken::operator new(size_t sz, MemoryControl *mc)
+{
+  void *ret = mc->allocate(sz);
+  return ret;
+}
+
+static void
+REToken::operator delete(void *ptr, MemoryControl *mc)
+{
+  mc->deallocate(ptr, 1);
+}
 
 /********************************************************/
-TokenList::TokenList(Alloc<REToken *> obj, const char *regex)
-  : m_toks(obj),
+TokenList::TokenList(MemoryControl *mc,
+		     Alloc<REToken *> obj,
+		     const char *regex)
+  : m_mc(mc),
+    m_toks(obj),
     m_allREToks(NULL),
     m_tmpCharList(NULL),
     m_tmpInvCharList(NULL)
@@ -104,9 +119,12 @@ TokenList::TokenList(Alloc<REToken *> obj, const char *regex)
   }
 }
 
-TokenList::TokenList(Alloc<REToken *> obj, const char *regex,
+TokenList::TokenList(MemoryControl *mc,
+		     Alloc<REToken *> obj,
+		     const char *regex,
 		     size_t start, size_t len)
-  : m_toks(obj),
+  : m_mc(mc),
+    m_toks(obj),
     m_allREToks(NULL),
     m_tmpCharList(NULL),
     m_tmpInvCharList(NULL)
@@ -125,6 +143,18 @@ TokenList::TokenList(Alloc<REToken *> obj, const char *regex,
   }
 }
 
+static void *
+TokenList::operator new(size_t sz, MemoryControl *mc)
+{
+  void *ret = mc->allocate(sz);
+  return ret;
+}
+
+static void
+TokenList::operator delete(void *ptr, MemoryControl *mc)
+{
+  mc->deallocate(ptr, 1);
+}
 
 TokenList::~TokenList()
 {
@@ -139,7 +169,8 @@ TokenList::undoContructor(REToken *ptr)
     REToken *tmp = ptr->m_next;
     if (ptr->m_ttype == TT_CHAR_CLASS && ptr->u.m_charClass)
       delete ptr->u.m_charClass;
-    delete ptr;
+    ptr->~REToken();
+    this->m_mc->deallocate(ptr, sizeof(*ptr));
     ptr = tmp;
   }
 
@@ -261,7 +292,7 @@ TokenList::buildQuantifier(const uchar *start, const uchar *ptr,
   }
 
   if (ch == '}') {
-    tok = new REToken(this, TT_QUANTIFIER);
+    tok = new (this->m_mc) REToken(this, TT_QUANTIFIER);
     tok->u.m_quant.m_v1 = v1;
     tok->u.m_quant.m_v2 = 0;
     tok->u.m_quant.m_v1Valid = true;
@@ -295,7 +326,7 @@ TokenList::buildQuantifier(const uchar *start, const uchar *ptr,
   }
 
   if (ch == '}') {
-    tok = new REToken(this, TT_QUANTIFIER);
+    tok = new (this->m_mc) REToken(this, TT_QUANTIFIER);
     tok->u.m_quant.m_v1 = v1;
     tok->u.m_quant.m_v2 = v2;
     tok->u.m_quant.m_v1Valid = v1_found;
@@ -423,7 +454,7 @@ TokenList::addToCharClass(REToken::UCharList  *c_class, uchar v1, uchar v2)
 void
 TokenList::addRange(bool invert)
 {
-  REToken *tok = new REToken(this, TT_CHAR_CLASS);
+  REToken *tok = new (this->m_mc) REToken(this, TT_CHAR_CLASS);
 
   if (invert) {
     this->createInverseRange();
@@ -473,7 +504,7 @@ TokenList::createInverseRange()
 void
 TokenList::simpleAddToken(TokType tp, uchar ch)
 {
-  REToken *tok = new REToken(this, tp, ch);
+  REToken *tok = new (this->m_mc) REToken(this, tp, ch);
   this->m_toks.push_back(tok);
   return;
 }
@@ -482,7 +513,7 @@ void
 TokenList::addTokenAndMaybeCcat(TokType tp, uchar ch)
 {
   this->maybeAddCcat(tp);
-  REToken *tok = new REToken(this, tp, ch);
+  REToken *tok = new (this->m_mc) REToken(this, tp, ch);
   this->m_toks.push_back(tok);
   return;
 }
@@ -503,7 +534,7 @@ TokenList::maybeAddCcat(TokType cur_tp)
 
   switch (tok->m_ttype) {
   case TT_SELF_CHAR:
-    tok = new REToken(this, TT_CCAT);
+    tok = new (this->m_mc) REToken(this, TT_CCAT);
     this->m_toks.push_back(tok);
     break;
   default:

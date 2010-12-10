@@ -162,6 +162,12 @@ struct REToken {
   } u;
     
   REToken(TokenList *, TokType tt, uchar c='\0');
+
+  static void *operator new(size_t, MemoryControl *);
+  static void operator delete(void *, MemoryControl *);
+
+private:
+  static void *operator new(size_t);
 };
 
 /********************************/
@@ -169,15 +175,19 @@ struct REToken {
 struct TokenList {
   typedef list<REToken *, Alloc<REToken *> > TokList;
 
+  MemoryControl *m_mc;
   TokList  m_toks;
   TokList::iterator m_iter;
   REToken *m_allREToks;
   REToken::UCharList *m_tmpCharList;
   REToken::UCharList *m_tmpInvCharList;
 
-  TokenList(Alloc<REToken *>, const char *);
-  TokenList(Alloc<REToken *>, const char *, size_t idx, size_t len);
+  TokenList(MemoryControl *, Alloc<REToken *>, const char *);
+  TokenList(MemoryControl *, Alloc<REToken *>, const char *,
+	    size_t idx, size_t len);
   ~TokenList();
+  static void *operator new(size_t, MemoryControl *);
+  static void operator delete(void *, MemoryControl *);
 
   bool equals(TokList::iterator, TokType, uchar = '\0');
 
@@ -206,6 +216,7 @@ private:
   void maybeAddCcat(TokType);
 
   void undoContructor(REToken *);
+  void *operator new(size_t);
 };
 
 
