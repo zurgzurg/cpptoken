@@ -43,3 +43,7 @@ cpptoken::Buffer::Buffer(MemoryControl *)
 cpptoken::Builder::Builder(MemoryControl *)
 {
 }
+
+cpptoken::Builder::~Builder()
+{
+}

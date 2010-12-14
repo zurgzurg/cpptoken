@@ -743,12 +743,17 @@ TC_MemFail01::run()
 /********************/
 
 class MemoryControlWithFailure : public MemoryControl {
- public:
+public:
   size_t  m_numAllocs;
   size_t  m_numDeallocs;
 
-  bool    use_limit;
-  size_t  limit;
+private:
+  bool    m_useLimit;
+  size_t  m_limit;
+
+public:
+  MemoryControlWithFailure();
+  ~MemoryControlWithFailure();
 
   virtual void *allocate(size_t);
   virtual void deallocate(void *, size_t);
@@ -758,21 +763,35 @@ class MemoryControlWithFailure : public MemoryControl {
   void setLimit(size_t);
 };
 
+MemoryControlWithFailure::MemoryControlWithFailure()
+{
+  this->m_numAllocs = 0;
+  this->m_numDeallocs = 0;
+  this->m_useLimit = false;
+  this->m_limit = 0;
+}
+
+MemoryControlWithFailure::~MemoryControlWithFailure()
+{
+  if (this->m_numAllocs != this->m_numDeallocs)
+    throw TestFailure(__FILE__, __LINE__);
+}
+
 void *
 MemoryControlWithFailure::allocate(size_t sz)
 {
-  this->m_numAllocs++;
-  if (this->use_limit && this->m_numAllocs > this->limit)
+  if (this->m_useLimit && this->m_numAllocs >= this->m_limit)
     throw bad_alloc();
   void *ptr = ::operator new(sz);
+  this->m_numAllocs++;
   return ptr;
 }
 
 void
 MemoryControlWithFailure::deallocate(void *ptr, size_t sz)
 {
-  this->m_numDeallocs++;
   ::operator delete(ptr);
+  this->m_numDeallocs++;
 }
 
 void
@@ -785,15 +804,15 @@ MemoryControlWithFailure::resetCounters()
 void
 MemoryControlWithFailure::disableLimit()
 {
-  this->use_limit = false;
-  this->limit = 0;
+  this->m_useLimit = false;
+  this->m_limit = 0;
 }
 
 void
 MemoryControlWithFailure::setLimit(size_t l)
 {
-  this->use_limit = true;
-  this->limit = l;
+  this->m_useLimit = true;
+  this->m_limit = l;
 }
 
 /********************/
@@ -1003,6 +1022,8 @@ TC_BuilderBasic01::run()
   mc.resetCounters();
   mc.disableLimit();
   
+  Builder b(&mc);
+
   this->setStatus(true);
 }
 
