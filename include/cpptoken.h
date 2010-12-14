@@ -35,11 +35,15 @@
 
 namespace cpptoken {
 
+/*******************************************************/
+
 class MemoryControl {
  public:
   virtual void *allocate(size_t);
   virtual void deallocate(void *, size_t);
 };
+
+/*******************************************************/
 
 class SyntaxError : public std::exception {
   private:
@@ -55,6 +59,8 @@ class SyntaxError : public std::exception {
     size_t getErrorIndex() const throw();
 };
 
+/*******************************************************/
+
 class Buffer {
  private:
   
@@ -62,14 +68,16 @@ class Buffer {
   Buffer(MemoryControl *);
 };
 
-class Lexer {
+/*******************************************************/
+class Builder {
  private:
 
  public:
-  Lexer(MemoryControl *);
-
-  
- private:
+  Builder(MemoryControl *);
+  ~Builder();
+  static void *operator new(size_t);
+  static void *operator new(size_t, MemoryControl *);
+  static void operator delete(void *, MemoryControl *);
 };
 
 }
