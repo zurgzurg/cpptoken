@@ -40,6 +40,6 @@ cpptoken::Buffer::Buffer(MemoryControl *)
 {
 }
 
-cpptoken::Lexer::Lexer(MemoryControl *)
+cpptoken::Builder::Builder(MemoryControl *)
 {
 }

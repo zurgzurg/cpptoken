@@ -34,10 +34,13 @@ AC_CONFIG_HEADERS([src/config.h])
 AC_CHECK_HEADERS([unistd.h cstddef cstring exception list sstream iostream],,
                  [AC_MSG_ERROR([Required header files missing.])])
 
+AC_PATH_PROG([VALGRIND], [valgrind])
+
 AC_OUTPUT
 
 echo ""
 echo "Summary of options"
 echo ""
 echo "Use multi-threading          ${mt_exec}"
+echo "valgrind path                ${VALGRIND}"
 echo ""

@@ -989,6 +989,23 @@ TC_MemFail05::run()
   this->setStatus(true);
 }
 
+/********************/
+
+struct TC_BuilderBasic01 : public TestCase {
+  TC_BuilderBasic01() : TestCase("TC_BuilderBasic01") {;};
+  void run();
+};
+
+void
+TC_BuilderBasic01::run()
+{
+  MemoryControlWithFailure mc;
+  mc.resetCounters();
+  mc.disableLimit();
+  
+  this->setStatus(true);
+}
+
 /****************************************************/
 /* top level                                        */
 /****************************************************/
@@ -1016,6 +1033,8 @@ make_suite_all_tests()
   s->addTestCase(new TC_MemFail03());
   s->addTestCase(new TC_MemFail04());
   s->addTestCase(new TC_MemFail05());
+
+  s->addTestCase(new TC_BuilderBasic01());
 
   return s;
 }
