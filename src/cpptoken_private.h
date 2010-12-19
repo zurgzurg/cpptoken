@@ -35,85 +35,6 @@
 
 namespace cpptoken {
 
-template <class T>
-class Alloc  {
-  MemoryControl *mc;
-
- public:
-  typedef T                value_type;
-  typedef T*               pointer;
-  typedef const T*         const_pointer;
-  typedef T&               reference;
-  typedef const T&         const_reference;
-  typedef std::size_t      size_type;
-  typedef std::ptrdiff_t   difference_type;
-
-  template <class U>
-  struct rebind {
-    typedef Alloc<U> other;
-  };
-
-  pointer address (reference value) const {
-    return &value;
-  }
-
-  const_pointer address (const_reference value) const {
-    return &value;
-  }
-
-  Alloc() throw() {
-    this->mc = NULL;
-  }
-
-  Alloc(const Alloc&other) throw() {
-    this->mc = other.mc;
-  }
-
-  template <class U>
-  Alloc(const Alloc<U>&other) throw() {
-    this->mc = other.getMC();
-  }
-
-  ~Alloc() throw() {
-  }
-
-  size_type max_size () const throw() {
-    return std::numeric_limits<std::size_t>::max() / sizeof(T);
-  }
-
-  pointer allocate (size_type num, const void* = 0) {
-    pointer ret = (pointer)this->mc->allocate(num * sizeof(T));
-    return ret;
-  }
-
-  void construct (pointer p, const T& value) {
-    new((void*)p)T(value);
-  }
-
-  void destroy (pointer p) {
-    p->~T();
-  }
-
-  void deallocate (pointer p, size_type num) {
-    this->mc->deallocate(p, num * sizeof(T));
-  }
-
-  ////////
-
-  MemoryControl *getMC() const throw() {return this->mc;}
-  void setMC(MemoryControl *obj) throw() { this->mc = obj; }
-};
-
-template <class T1, class T2>
-bool operator== (const Alloc<T1>&, const Alloc<T2>&) throw() {
-  return true;
-}
-
-template <class T1, class T2>
-bool operator!= (const Alloc<T1>&, const Alloc<T2>&) throw() {
-  return false;
-}
-
 /********************************/
 
 enum TokType {
@@ -219,14 +140,35 @@ private:
   void *operator new(size_t);
 };
 
+/********************************/
+
+struct PatternAction {
+  const char *regex;
+  action_func fp;
+  void *arg;
+};
 
 /********************************/
 
 class FABase {
+public:
+  FABase() {;};
+
+  static void *operator new(size_t sz);
+  static void *operator new(size_t sz, MemoryControl *mc);
+  static void operator delete(void *ptr, size_t sz, MemoryControl *mc);
 };
 
 class NFA : public FABase {
+  
+public:
+  NFA() {;};
+
+  static void *operator new(size_t sz);
+  static void *operator new(size_t sz, MemoryControl *mc);
+  static void operator delete(void *ptr, size_t sz, MemoryControl *mc);
 };
+
 
 }
 

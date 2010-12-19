@@ -1059,6 +1059,8 @@ TC_BuilderBasic02::run()
   BuilderLimits lim;
   NFA *nfa = b.BuildNFA(&mc, &lim);
   ASSERT_TRUE(nfa != NULL);
+  nfa->~NFA();
+  mc.deallocate(nfa, sizeof(*nfa));
 
   this->setStatus(true);
 }

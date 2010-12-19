@@ -40,14 +40,103 @@ using namespace std;
 #include "cpptoken_private.h"
 using namespace cpptoken;
 
+/********************************/
+static void *
+FABase::operator new(size_t sz)
+{
+  void *ptr = ::operator new(sz);
+  return ptr;
+}
+
+static void *
+FABase::operator new(size_t sz, MemoryControl *mc)
+{
+  void *ptr = mc->allocate(sz);
+  return ptr;
+}
+
+static void
+FABase::operator delete(void *ptr, size_t sz, MemoryControl *mc)
+{
+  mc->deallocate(ptr, sz);
+}
+
+/********************************/
+static void *
+NFA::operator new(size_t sz)
+{
+  void *ptr = ::operator new(sz);
+  return ptr;
+}
+
+static void *
+NFA::operator new(size_t sz, MemoryControl *mc)
+{
+  void *ptr = mc->allocate(sz);
+  return ptr;
+}
+
+static void
+NFA::operator delete(void *ptr, size_t sz, MemoryControl *mc)
+{
+  mc->deallocate(ptr, sz);
+}
+
+/********************************/
+
+Builder::Builder(MemoryControl *mc)
+{
+  this->m_mc = mc;
+  this->m_pats = NULL;
+}
+
+Builder::~Builder()
+{
+  this->m_mc = NULL;
+  if (this->m_pats != NULL) {
+    delete this->m_pats;
+  }
+}
+
+/********************************/
+
+static void *
+Builder::operator new(size_t sz)
+{
+  void *ptr = ::operator new(sz);
+  return ptr;
+}
+
+static void *
+Builder::operator new(size_t sz, MemoryControl *mc)
+{
+  void *ptr = mc->allocate(sz);
+  return ptr;
+}
+
+static void
+Builder::operator delete(void *ptr, size_t sz, MemoryControl *mc)
+{
+  mc->deallocate(ptr, sz);
+}
+
+/********************************/
+
 void
 Builder::addRegEx(const char *ptr, action_func fp, void *arg)
 {
-  return;
+  if (this->m_pats == NULL) {
+    Alloc<PatternAction *> allocObj;
+    allocObj.setMC(this->m_mc);
+    this->m_pats = new list<PatternAction *, Alloc<PatternAction *> >(allocObj);
+  }
 }
 
 NFA *
 Builder::BuildNFA(MemoryControl *nfaMC, BuilderLimits *NFALim)
 {
-  return NULL;
+  NFA *res = new (nfaMC) NFA();
+  return res;
 }
+
+/********************************/

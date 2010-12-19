@@ -32,40 +32,16 @@
 
 #include <cstddef>
 
+#include <limits>
+#include <memory>
+#include <list>
 #include <exception>
+using namespace std;
 
 #include "cpptoken.h"
+#include "cpptoken_private.h"
 
 namespace cpptoken {
 
-Builder::Builder(MemoryControl *mc)
-{
-  this->m_mc = mc;
-}
-
-Builder::~Builder()
-{
-  this->m_mc = NULL;
-}
-
-static void *
-Builder::operator new(size_t sz)
-{
-  void *ptr = ::operator new(sz);
-  return ptr;
-}
-
-static void *
-Builder::operator new(size_t sz, MemoryControl *mc)
-{
-  void *ptr = mc->allocate(sz);
-  return ptr;
-}
-
-static void
-Builder::operator delete(void *ptr, size_t sz, MemoryControl *mc)
-{
-  mc->deallocate(ptr, sz);
-}
 
 }
