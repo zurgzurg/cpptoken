@@ -1,6 +1,3 @@
-#ifndef _CPPTOKEN_H_
-#define _CPPTOKEN_H_
-
 // Copyright (c) 2010, Ram Bhamidipaty
 // All rights reserved.
 // 
@@ -33,70 +30,24 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace cpptoken {
+#include <memory>
+#include <limits>
+#include <list>
+#include <iostream>
+using namespace std;
 
-class FABase;
-class NFA;
+#include "cpptoken.h"
+#include "cpptoken_private.h"
+using namespace cpptoken;
 
-/*******************************************************/
-
-class MemoryControl {
- public:
-  virtual void *allocate(size_t);
-  virtual void deallocate(void *, size_t);
-};
-
-/*******************************************************/
-
-class SyntaxError : public std::exception {
-  private:
-    size_t m_errIdx;
-    const char *m_reason;
-
-  public:
-    SyntaxError(size_t idx, const char *msg)
-      : std::exception(),
-        m_errIdx(idx),
-        m_reason(msg) {;};
-
-    size_t getErrorIndex() const throw();
-};
-
-/*******************************************************/
-typedef void *(*action_func)(void *userArg, const char *str, size_t len);
-
-class BuilderLimits {
-  size_t m_maxTimeInSeconds;
-  size_t m_maxStates;
-
- public:
-  BuilderLimits() : m_maxTimeInSeconds(0), m_maxStates(0) {;};
-  BuilderLimits(size_t tm, size_t st)
-    : m_maxTimeInSeconds(0),
-      m_maxStates(0) {;};
-};
-
-class Builder {
- private:
-  MemoryControl *m_mc;
-
-
-
- public:
-  Builder(MemoryControl *);
-  ~Builder();
-  static void *operator new(size_t sz);
-  static void *operator new(size_t sz, MemoryControl *mc);
-  static void operator delete(void *ptr, size_t sz, MemoryControl *mc);
-
-  /* public api */
-  void addRegEx(const char *, action_func, void *userArg);
-  
-  /* not for external use */
-  NFA *BuildNFA(MemoryControl *, BuilderLimits *);
-};
-
-
+void
+Builder::addRegEx(const char *ptr, action_func fp, void *arg)
+{
+  return;
 }
 
-#endif
+NFA *
+Builder::BuildNFA(MemoryControl *nfaMC, BuilderLimits *NFALim)
+{
+  return NULL;
+}

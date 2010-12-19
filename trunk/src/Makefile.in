@@ -73,8 +73,8 @@ am__installdirs = "$(DESTDIR)$(libdir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libcpptoken_la_LIBADD =
 am_libcpptoken_la_OBJECTS = libcpptoken_la-cpptoken.lo \
-	libcpptoken_la-re_parse.lo libcpptoken_la-errors.lo \
-	libcpptoken_la-mem_util.lo
+	libcpptoken_la-re_parse.lo libcpptoken_la-nfa.lo \
+	libcpptoken_la-errors.lo libcpptoken_la-mem_util.lo
 libcpptoken_la_OBJECTS = $(am_libcpptoken_la_OBJECTS)
 libcpptoken_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) \
@@ -237,7 +237,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 TESTS_ENVIRONMENT = $(VALGRIND)
 lib_LTLIBRARIES = libcpptoken.la
-libcpptoken_la_SOURCES = cpptoken.cpp re_parse.cpp errors.cpp mem_util.cpp cpptoken_private.h
+libcpptoken_la_SOURCES = cpptoken.cpp re_parse.cpp nfa.cpp errors.cpp mem_util.cpp cpptoken_private.h
 libcpptoken_la_CXXFLAGS = -I$(top_srcdir)/include
 utests_SOURCES = utests.cpp
 utests_LDADD = libcpptoken.la
@@ -349,6 +349,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcpptoken_la-cpptoken.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcpptoken_la-errors.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcpptoken_la-mem_util.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcpptoken_la-nfa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcpptoken_la-re_parse.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/utests-utests.Po@am__quote@
 
@@ -386,6 +387,13 @@ libcpptoken_la-re_parse.lo: re_parse.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='re_parse.cpp' object='libcpptoken_la-re_parse.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcpptoken_la_CXXFLAGS) $(CXXFLAGS) -c -o libcpptoken_la-re_parse.lo `test -f 're_parse.cpp' || echo '$(srcdir)/'`re_parse.cpp
+
+libcpptoken_la-nfa.lo: nfa.cpp
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcpptoken_la_CXXFLAGS) $(CXXFLAGS) -MT libcpptoken_la-nfa.lo -MD -MP -MF $(DEPDIR)/libcpptoken_la-nfa.Tpo -c -o libcpptoken_la-nfa.lo `test -f 'nfa.cpp' || echo '$(srcdir)/'`nfa.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libcpptoken_la-nfa.Tpo $(DEPDIR)/libcpptoken_la-nfa.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='nfa.cpp' object='libcpptoken_la-nfa.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcpptoken_la_CXXFLAGS) $(CXXFLAGS) -c -o libcpptoken_la-nfa.lo `test -f 'nfa.cpp' || echo '$(srcdir)/'`nfa.cpp
 
 libcpptoken_la-errors.lo: errors.cpp
 @am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcpptoken_la_CXXFLAGS) $(CXXFLAGS) -MT libcpptoken_la-errors.lo -MD -MP -MF $(DEPDIR)/libcpptoken_la-errors.Tpo -c -o libcpptoken_la-errors.lo `test -f 'errors.cpp' || echo '$(srcdir)/'`errors.cpp
