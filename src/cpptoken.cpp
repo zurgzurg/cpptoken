@@ -36,14 +36,36 @@
 
 #include "cpptoken.h"
 
-cpptoken::Buffer::Buffer(MemoryControl *)
+namespace cpptoken {
+
+Builder::Builder(MemoryControl *mc)
 {
+  this->m_mc = mc;
 }
 
-cpptoken::Builder::Builder(MemoryControl *)
+Builder::~Builder()
 {
+  this->m_mc = NULL;
 }
 
-cpptoken::Builder::~Builder()
+static void *
+Builder::operator new(size_t sz)
 {
+  void *ptr = ::operator new(sz);
+  return ptr;
+}
+
+static void *
+Builder::operator new(size_t sz, MemoryControl *mc)
+{
+  void *ptr = mc->allocate(sz);
+  return ptr;
+}
+
+static void
+Builder::operator delete(void *ptr, size_t sz, MemoryControl *mc)
+{
+  mc->deallocate(ptr, sz);
+}
+
 }

@@ -1024,8 +1024,45 @@ TC_BuilderBasic01::run()
   
   Builder b(&mc);
 
+  {
+    Builder *b2 = new (&mc) Builder(&mc);
+    b2->~Builder();
+    mc.deallocate(b2, sizeof(*b2));
+  }
+
   this->setStatus(true);
 }
+
+/********************/
+
+struct TC_BuilderBasic02 : public TestCase {
+  TC_BuilderBasic02() : TestCase("TC_BuilderBasic02") {;};
+  static void *f1(void *arg, const char *ptr, size_t len);
+  void run();
+};
+
+void *
+TC_BuilderBasic02::f1(void *arg, const char *ptr, size_t len)
+{
+  return NULL;
+}
+
+void
+TC_BuilderBasic02::run()
+{
+  MemoryControlWithFailure mc;
+  mc.resetCounters();
+  mc.disableLimit();
+  
+  Builder b(&mc);
+  b.addRegEx("a", &TC_BuilderBasic02::f1, NULL);
+  BuilderLimits lim;
+  NFA *nfa = b.BuildNFA(&mc, &lim);
+  ASSERT_TRUE(nfa != NULL);
+
+  this->setStatus(true);
+}
+
 
 /****************************************************/
 /* top level                                        */
@@ -1056,6 +1093,7 @@ make_suite_all_tests()
   s->addTestCase(new TC_MemFail05());
 
   s->addTestCase(new TC_BuilderBasic01());
+  s->addTestCase(new TC_BuilderBasic02());
 
   return s;
 }
