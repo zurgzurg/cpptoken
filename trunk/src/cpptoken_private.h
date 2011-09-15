@@ -92,7 +92,6 @@ private:
 };
 
 /********************************/
-
 struct TokenList {
   typedef list<REToken *, Alloc<REToken *> > TokList;
 
@@ -142,6 +141,9 @@ private:
 
 /********************************/
 
+
+/********************************/
+
 struct PatternAction {
   const char *regex;
   action_func fp;
@@ -149,24 +151,31 @@ struct PatternAction {
 };
 
 /********************************/
+typedef size_t stateNum;
 
-class FABase {
-public:
-  FABase() {;};
-
-  static void *operator new(size_t sz);
-  static void *operator new(size_t sz, MemoryControl *mc);
-  static void operator delete(void *ptr, size_t sz, MemoryControl *mc);
+class NextState {
+  stateNum idx;
+  stateNum cnt;
 };
 
-class NFA : public FABase {
-  
+class NFAContext {
+  vector<stateNum, Alloc<stateNum> > stateBuf;
+};
+
+class NFA {
+private:
+  stateNum start;
+  vector<bool, Alloc<bool> > acceptingStates;
+  vector<NextState, Alloc<NextState> > transTbl;
+
 public:
   NFA() {;};
 
   static void *operator new(size_t sz);
   static void *operator new(size_t sz, MemoryControl *mc);
   static void operator delete(void *ptr, size_t sz, MemoryControl *mc);
+
+  stateNum getNumStates() const;
 };
 
 

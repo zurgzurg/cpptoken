@@ -44,7 +44,7 @@ macro_version=2.4
 macro_revision=1.3293
 
 # Whether or not to build shared libraries.
-build_libtool_libs=no
+build_libtool_libs=yes
 
 # Whether or not to build static libraries.
 build_old_libs=yes
@@ -53,7 +53,7 @@ build_old_libs=yes
 pic_mode=default
 
 # Whether or not to optimize for fast installation.
-fast_install=needless
+fast_install=yes
 
 # Shell to use when invoking shell scripts.
 SHELL="/bin/sh"
@@ -269,10 +269,10 @@ finish_eval=""
 hardcode_into_libs=yes
 
 # Compile-time system search path for libraries.
-sys_lib_search_path_spec="/usr/lib/gcc/i686-pc-linux-gnu/4.5.1 /usr/lib /lib "
+sys_lib_search_path_spec="/usr/lib/gcc/i686-pc-linux-gnu/4.6.1 /usr/lib /lib "
 
 # Run-time system search path for libraries.
-sys_lib_dlsearch_path_spec="/lib /usr/lib /usr/lib/libfakeroot /usr/lib/xulrunner-1.9.2 "
+sys_lib_dlsearch_path_spec="/lib /usr/lib /usr/lib/libfakeroot /usr/lib/gnome-bluetooth /usr/lib/perl5/core_perl/CORE /usr/lib/xulrunner-6.0 "
 
 # Whether dlopen is supported.
 dlopen_support=unknown
@@ -320,7 +320,7 @@ link_static_flag="-static"
 compiler_c_o="yes"
 
 # Whether or not to add -lc for building shared libraries.
-build_libtool_need_lc=yes
+build_libtool_need_lc=no
 
 # Whether or not to disallow shared libs when runtime libs are static.
 allow_libtool_libs_with_static_runtimes=no
@@ -10210,17 +10210,17 @@ file_list_spec=""
 hardcode_action=immediate
 
 # The directories searched by this compiler when creating a shared library.
-compiler_lib_search_dirs="/usr/lib/gcc/i686-pc-linux-gnu/4.5.1 /usr/lib/gcc/i686-pc-linux-gnu/4.5.1/../../.."
+compiler_lib_search_dirs="/usr/lib/gcc/i686-pc-linux-gnu/4.6.1 /usr/lib/gcc/i686-pc-linux-gnu/4.6.1/../../.."
 
 # Dependencies to place before and after the objects being linked to
 # create a shared library.
-predep_objects="/usr/lib/gcc/i686-pc-linux-gnu/4.5.1/../../../crti.o /usr/lib/gcc/i686-pc-linux-gnu/4.5.1/crtbeginS.o"
-postdep_objects="/usr/lib/gcc/i686-pc-linux-gnu/4.5.1/crtendS.o /usr/lib/gcc/i686-pc-linux-gnu/4.5.1/../../../crtn.o"
+predep_objects="/usr/lib/gcc/i686-pc-linux-gnu/4.6.1/../../../crti.o /usr/lib/gcc/i686-pc-linux-gnu/4.6.1/crtbeginS.o"
+postdep_objects="/usr/lib/gcc/i686-pc-linux-gnu/4.6.1/crtendS.o /usr/lib/gcc/i686-pc-linux-gnu/4.6.1/../../../crtn.o"
 predeps=""
 postdeps="-lstdc++ -lm -lgcc_s -lc -lgcc_s"
 
 # The library search path used internally by the compiler when linking
 # a shared library.
-compiler_lib_search_path="-L/usr/lib/gcc/i686-pc-linux-gnu/4.5.1 -L/usr/lib/gcc/i686-pc-linux-gnu/4.5.1/../../.."
+compiler_lib_search_path="-L/usr/lib/gcc/i686-pc-linux-gnu/4.6.1 -L/usr/lib/gcc/i686-pc-linux-gnu/4.6.1/../../.."
 
 # ### END LIBTOOL TAG CONFIG: CXX

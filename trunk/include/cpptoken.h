@@ -170,7 +170,8 @@ class Builder {
   static void operator delete(void *ptr, size_t sz, MemoryControl *mc);
 
   /* public api */
-  void addRegEx(const char *, action_func, void *userArg);
+  void addRegEx(const char *regex, action_func, void *userArg);
+  void addRegEx(const char *regex, void *tok);
   
   /* not for external use */
   NFA *BuildNFA(MemoryControl *, BuilderLimits *);
