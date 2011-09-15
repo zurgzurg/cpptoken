@@ -35,6 +35,7 @@
 #include <limits>
 #include <memory>
 #include <list>
+#include <vector>
 #include <exception>
 using namespace std;
 

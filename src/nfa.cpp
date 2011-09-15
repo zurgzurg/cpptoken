@@ -33,33 +33,13 @@
 #include <memory>
 #include <limits>
 #include <list>
+#include <vector>
 #include <iostream>
 using namespace std;
 
 #include "cpptoken.h"
 #include "cpptoken_private.h"
 using namespace cpptoken;
-
-/********************************/
-static void *
-FABase::operator new(size_t sz)
-{
-  void *ptr = ::operator new(sz);
-  return ptr;
-}
-
-static void *
-FABase::operator new(size_t sz, MemoryControl *mc)
-{
-  void *ptr = mc->allocate(sz);
-  return ptr;
-}
-
-static void
-FABase::operator delete(void *ptr, size_t sz, MemoryControl *mc)
-{
-  mc->deallocate(ptr, sz);
-}
 
 /********************************/
 static void *
@@ -140,3 +120,8 @@ Builder::BuildNFA(MemoryControl *nfaMC, BuilderLimits *NFALim)
 }
 
 /********************************/
+stateNum
+NFA::getNumStates() const
+{
+  return 0;
+}

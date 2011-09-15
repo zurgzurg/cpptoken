@@ -34,6 +34,7 @@
 #include <cstring>
 
 #include <list>
+#include <vector>
 #include <limits>
 #include <sstream>
 #include <exception>
@@ -49,12 +50,23 @@ using namespace cpptoken;
 /****************************************************/
 class TestFailure : public exception {
   string msg;
+
+  // attempt to prevent two exceptions from being thrown at the 'same' time
+  // TestFailure should only be created if it is going to be thrown, so bump
+  // the counter on creation and decrment when it is handled
+  static int numActive;
+
 public:
   TestFailure(const char *file, int line);
   ~TestFailure() throw() {;};
 
   const char *what() const throw();
+
+  static void setUnwindDone() throw();
+  static int getNumActive() throw();
 };
+
+int TestFailure::numActive = 0;
 
 TestFailure::TestFailure(const char *file, int line)
 {
@@ -65,6 +77,7 @@ TestFailure::TestFailure(const char *file, int line)
   tmp << line;
   tmp << "\n";
   this->msg = tmp.str();
+  TestFailure::numActive++;
 }
 
 const char *
@@ -76,6 +89,28 @@ TestFailure::what() const throw()
 
   return r;
 }
+
+// static member func
+void
+TestFailure::setUnwindDone() throw()
+{
+  TestFailure::numActive--;
+}
+
+// static member func
+int
+TestFailure::getNumActive() throw()
+{
+  return TestFailure::numActive;
+}
+
+/****************************************************/
+class TestOption {
+public:
+  bool verbose;
+
+  TestOption() : verbose(false) {;};
+};
 
 /****************************************************/
 class TestResult {
@@ -111,6 +146,15 @@ TestResult::report()
     list<string>::iterator iter = this->tests_e.begin();
     cout << "Tests failing with exceptions\n";
     while (iter != this->tests_e.end()) {
+      cout << "    " << *iter << "\n";
+      iter++;
+    }
+  }
+
+  if (!this->tests_f.empty()) {
+    list<string>::iterator iter = this->tests_f.begin();
+    cout << "Failing tests\n";
+    while (iter != this->tests_f.end()) {
       cout << "    " << *iter << "\n";
       iter++;
     }
@@ -153,6 +197,8 @@ TestCase::assertTrue(bool c, const char *fname, int line)
   if (this->result)
     this->result->n_asserts++;
   if (c == true)
+    return;
+  if (TestFailure::getNumActive() > 0)
     return;
   throw TestFailure(fname, line);
 }
@@ -224,7 +270,7 @@ struct TestSuite {
 
   ~TestSuite();
 
-  void run(TestResult *);
+  void run(TestResult *, TestOption *);
   void addTestCase(TestCase *);
 };
 
@@ -242,13 +288,16 @@ TestSuite::~TestSuite()
 /************/
 
 void
-TestSuite::run(TestResult *result)
+TestSuite::run(TestResult *result, TestOption *opt)
 {
   list<TestCase *>::iterator iter;
   
   iter = this->tests.begin();
   while (iter != this->tests.end()) {
     TestCase *tc = *iter;
+
+    if (opt->verbose)
+      cout << "Starting test " << tc->name << "\n";
 
     tc->result = result;
     try {
@@ -258,14 +307,21 @@ TestSuite::run(TestResult *result)
       tc->statusSet = false;
       tc->run();
 
-      if (tc->statusSet == false)
+      if (tc->statusSet == false) {
 	result->n_fail++;
+	result->tests_f.push_back( tc->name );
+      }
 
     }
     catch (TestFailure e) {
+      TestFailure::setUnwindDone();
+      if (opt->verbose)
+	cout << "    caught test fail exception\n";
       result->tests_e.push_back( tc->name + e.what() );
       result->n_exceptions++;
     }
+    if (opt->verbose)
+      cout << "    done\n";
 
     iter++;
   }
@@ -746,6 +802,7 @@ class MemoryControlWithFailure : public MemoryControl {
 public:
   size_t  m_numAllocs;
   size_t  m_numDeallocs;
+  bool    m_allowMismatch;
 
 private:
   bool    m_useLimit;
@@ -767,20 +824,26 @@ MemoryControlWithFailure::MemoryControlWithFailure()
 {
   this->m_numAllocs = 0;
   this->m_numDeallocs = 0;
+  this->m_allowMismatch = false;
   this->m_useLimit = false;
   this->m_limit = 0;
 }
 
 MemoryControlWithFailure::~MemoryControlWithFailure()
 {
-  if (this->m_numAllocs != this->m_numDeallocs)
+  if (this->m_allowMismatch == true)
+    return;
+  if (this->m_numAllocs != this->m_numDeallocs
+      && TestFailure::getNumActive() == 0)
     throw TestFailure(__FILE__, __LINE__);
 }
 
 void *
 MemoryControlWithFailure::allocate(size_t sz)
 {
-  if (this->m_useLimit && this->m_numAllocs >= this->m_limit)
+  if (this->m_useLimit
+      && this->m_numAllocs >= this->m_limit
+      && TestFailure::getNumActive() == 0)
     throw bad_alloc();
   void *ptr = ::operator new(sz);
   this->m_numAllocs++;
@@ -1010,6 +1073,20 @@ TC_MemFail05::run()
 
 /********************/
 
+struct TC_Postfix01 : public TestCase {
+  TC_Postfix01() : TestCase("TC_Postfix01") {;};
+  void run();
+};
+
+
+void
+TC_Postfix01::run()
+{
+  ;
+}
+
+/********************/
+
 struct TC_BuilderBasic01 : public TestCase {
   TC_BuilderBasic01() : TestCase("TC_BuilderBasic01") {;};
   void run();
@@ -1065,6 +1142,39 @@ TC_BuilderBasic02::run()
   this->setStatus(true);
 }
 
+/********************/
+
+struct TC_BuilderBasic03 : public TestCase {
+  TC_BuilderBasic03() : TestCase("TC_BuilderBasic03") {;};
+  static void *f1(void *arg, const char *ptr, size_t len);
+  void run();
+};
+
+void *
+TC_BuilderBasic03::f1(void *arg, const char *ptr, size_t len)
+{
+  return NULL;
+}
+
+void
+TC_BuilderBasic03::run()
+{
+  MemoryControlWithFailure mc;
+  mc.resetCounters();
+  mc.disableLimit();
+
+  Builder b(&mc);
+  b.addRegEx("a", &TC_BuilderBasic03::f1, NULL);
+  BuilderLimits lim;
+  NFA *nfa = b.BuildNFA(&mc, &lim);
+
+  ASSERT_TRUE( nfa != NULL );
+
+  nfa->~NFA();
+  mc.deallocate(nfa, sizeof(*nfa));
+
+  this->setStatus(true);
+}
 
 /****************************************************/
 /* top level                                        */
@@ -1094,8 +1204,11 @@ make_suite_all_tests()
   s->addTestCase(new TC_MemFail04());
   s->addTestCase(new TC_MemFail05());
 
+  s->addTestCase(new TC_Postfix01());
+
   s->addTestCase(new TC_BuilderBasic01());
   s->addTestCase(new TC_BuilderBasic02());
+  s->addTestCase(new TC_BuilderBasic03());
 
   return s;
 }
@@ -1125,7 +1238,10 @@ main(int argc, const char **argv)
 {
   TestSuite *all = make_suite_all_tests();
   TestSuite *to_run = NULL;
+  TestOption opts;
   
+  //opts.verbose = true;
+
   if (argc != 1) {
     to_run = get_named_tests(all, argc, argv);
     delete all;
@@ -1137,7 +1253,7 @@ main(int argc, const char **argv)
   }
 
   TestResult result;
-  to_run->run(&result);
+  to_run->run(&result, &opts);
 
   result.report();
   delete to_run;
