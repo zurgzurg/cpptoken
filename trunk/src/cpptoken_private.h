@@ -58,8 +58,6 @@ enum TokType {
   TT_num      /* not an actual type */
 };
 
-typedef unsigned char uchar;
-
 /********************************/
 
 struct RETokQuantifier {
@@ -83,6 +81,7 @@ struct REToken {
   } u;
     
   REToken(TokenList *, TokType tt, uchar c='\0');
+  REToken(TokenList2 *, TokType tt, uchar c='\0');
 
   static void *operator new(size_t, MemoryControl *);
   static void operator delete(void *, MemoryControl *);
@@ -140,6 +139,58 @@ private:
 };
 
 /********************************/
+/* TokenList2 - copy of TokenList */
+/* but with explicit construction methods -- moved outside */
+/* of the constructor */
+/********************************/
+struct TokenList2 {
+  typedef list<REToken *, Alloc<REToken *> > TokList;
+
+  MemoryControl *m_mc;
+  TokList  m_toks;
+  TokList::iterator m_iter;
+  REToken *m_allREToks;
+  REToken::UCharList *m_tmpCharList;
+  REToken::UCharList *m_tmpInvCharList;
+
+  TokenList2(MemoryControl *, Alloc<REToken *>, const char *);
+  TokenList2(MemoryControl *, Alloc<REToken *>, const char *,
+	     size_t idx, size_t len);
+  ~TokenList2();
+  static void *operator new(size_t, MemoryControl *);
+  static void operator delete(void *, MemoryControl *);
+
+  bool equals(TokList::iterator, TokType, uchar = '\0');
+
+  bool verifyCharClassLength(size_t);
+  bool verifyCharClassMember(uchar);
+
+  void beginIteration();
+  void incrementIterator();
+  bool verifyNext(TokType, uchar = '\0');
+  bool verifyNextCharClass(const char *exp, size_t n_exp);
+  bool verifyNextQuantifier(bool, size_t v1, bool, size_t v2);
+  bool verifyEnd();
+
+private:
+  void build(const char *, size_t idx, size_t len);
+
+  const uchar *buildQuantifier(const uchar *, const uchar *, const uchar *);
+
+  const uchar *buildCharClass(const uchar *start,
+			      const uchar *ptr,
+			      const uchar *last_valid);
+  void addRange(bool invert);
+  void addToCharClass(REToken::UCharList  *, uchar, uchar);
+  void createInverseRange();
+
+  void simpleAddToken(TokType, uchar = '\0');
+  void addTokenAndMaybeCcat(TokType, uchar = '\0');
+  void maybeAddCcat(TokType);
+
+  void undoContructor(REToken *);
+  void *operator new(size_t);
+};
 
 
 /********************************/
