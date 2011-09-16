@@ -778,6 +778,13 @@ TokenList2::undoContructor(REToken *ptr)
 
 /*******************************************************/
 void
+TokenList2::build(const char *regex)
+{
+  size_t l = strlen(regex);
+  this->build(regex, 0, l);
+}
+
+void
 TokenList2::build(const char *regex, size_t start, size_t len)
 {
   const uchar *ptr, *last_valid;
