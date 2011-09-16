@@ -37,6 +37,9 @@ namespace cpptoken {
 
 class FABase;
 class NFA;
+class REToken;
+
+struct TokenList2;
 struct PatternAction;
 
 /*******************************************************/
@@ -145,6 +148,9 @@ class SyntaxError : public std::exception {
 /*******************************************************/
 typedef void *(*action_func)(void *userArg, const char *str, size_t len);
 
+typedef unsigned char uchar;
+typedef list<uchar, Alloc<uchar> > UCharList2;
+
 class BuilderLimits {
   size_t m_maxTimeInSeconds;
   size_t m_maxStates;
@@ -161,6 +167,9 @@ class Builder {
   MemoryControl *m_mc;
   list<PatternAction *, Alloc<PatternAction *> > *m_pats;
 
+  UCharList2 *m_tmpCharList;
+  UCharList2 *m_tmpInvCharList;
+
  public:
   Builder(MemoryControl *);
   ~Builder();
@@ -175,6 +184,9 @@ class Builder {
   
   /* not for external use */
   NFA *BuildNFA(MemoryControl *, BuilderLimits *);
+
+  /* tokenize regex */
+  TokenList2 *tokenizeRegEx(const char *regex, size_t start, size_t len);
 };
 
 
