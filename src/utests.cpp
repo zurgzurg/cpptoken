@@ -1071,6 +1071,44 @@ TC_MemFail05::run()
   this->setStatus(true);
 }
 
+/****************************************************/
+/****************************************************/
+/* tokenization2 tests                               */
+/****************************************************/
+/****************************************************/
+struct TC_Tokens201 : public TestCase {
+  TC_Tokens201() : TestCase("TC_Tokens201") {;};
+  void run();
+};
+
+void
+TC_Tokens201::run()
+{
+  this->setStatus(true);
+}
+
+/********************/
+
+struct TC_Tokens202 : public TestCase {
+  TC_Tokens202() : TestCase("TC_Tokens202") {;};
+  void run();
+};
+
+void
+TC_Tokens202::run()
+{
+  MemoryControl mc;
+  Alloc<REToken *> alloc;
+  alloc.setMC(&mc);
+
+  TokenList2 tlist(&mc, alloc);
+  tlist.build("a", 0, 1);
+  TokenList2::TokList::iterator iter = tlist.m_toks.begin();
+
+  ASSERT_TRUE(tlist.equals(iter, TT_SELF_CHAR, 'a'));
+  this->setStatus(true);
+}
+
 /********************/
 
 struct TC_Postfix01 : public TestCase {
@@ -1198,6 +1236,9 @@ make_suite_all_tests()
   s->addTestCase(new TC_Tokens07());
   s->addTestCase(new TC_Tokens08());
 
+  s->addTestCase(new TC_Tokens201());
+  s->addTestCase(new TC_Tokens202());
+
   s->addTestCase(new TC_MemFail01());
   s->addTestCase(new TC_MemFail02());
   s->addTestCase(new TC_MemFail03());
@@ -1240,7 +1281,7 @@ main(int argc, const char **argv)
   TestSuite *to_run = NULL;
   TestOption opts;
   
-  //opts.verbose = true;
+  opts.verbose = true;
 
   if (argc != 1) {
     to_run = get_named_tests(all, argc, argv);

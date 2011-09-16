@@ -153,10 +153,11 @@ struct TokenList2 {
   REToken::UCharList *m_tmpCharList;
   REToken::UCharList *m_tmpInvCharList;
 
-  TokenList2(MemoryControl *, Alloc<REToken *>, const char *);
-  TokenList2(MemoryControl *, Alloc<REToken *>, const char *,
-	     size_t idx, size_t len);
+  TokenList2(MemoryControl *, Alloc<REToken *>);
   ~TokenList2();
+
+  void build(const char *, size_t idx, size_t len);
+
   static void *operator new(size_t, MemoryControl *);
   static void operator delete(void *, MemoryControl *);
 
@@ -173,7 +174,6 @@ struct TokenList2 {
   bool verifyEnd();
 
 private:
-  void build(const char *, size_t idx, size_t len);
 
   const uchar *buildQuantifier(const uchar *, const uchar *, const uchar *);
 
