@@ -734,8 +734,7 @@ TokenList::verifyEnd()
 /********************************************************/
 /********************************************************/
 TokenList2::TokenList2(MemoryControl *mc,
-		     Alloc<REToken *> obj,
-		     const char *regex)
+		       Alloc<REToken *> obj)
   : m_mc(mc),
     m_toks(obj),
     m_allREToks(NULL),
@@ -743,42 +742,6 @@ TokenList2::TokenList2(MemoryControl *mc,
     m_tmpInvCharList(NULL)
 {
   this->m_toks.clear();
-  size_t len = strlen(regex);
-  try {
-    this->build(regex, 0, len);
-  }
-  catch (const SyntaxError &e) {
-    this->undoContructor(this->m_allREToks);
-    throw;
-  }
-  catch (const bad_alloc &e) {
-    this->undoContructor(this->m_allREToks);
-    throw;
-  }
-}
-
-TokenList2::TokenList2(MemoryControl *mc,
-		     Alloc<REToken *> obj,
-		     const char *regex,
-		     size_t start, size_t len)
-  : m_mc(mc),
-    m_toks(obj),
-    m_allREToks(NULL),
-    m_tmpCharList(NULL),
-    m_tmpInvCharList(NULL)
-{
-  this->m_toks.clear();
-  try {
-    this->build(regex, start, len);
-  }
-  catch (const SyntaxError &e) {
-    this->undoContructor(this->m_allREToks);
-    throw;
-  }
-  catch (const bad_alloc &e) {
-    this->undoContructor(this->m_allREToks);
-    throw;
-  }
 }
 
 static void *
