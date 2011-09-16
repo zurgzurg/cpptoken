@@ -1073,7 +1073,7 @@ TC_MemFail05::run()
 
 /****************************************************/
 /****************************************************/
-/* tokenization2 tests                               */
+/* tokenization2 tests                              */
 /****************************************************/
 /****************************************************/
 struct TC_Tokens201 : public TestCase {
@@ -1110,6 +1110,136 @@ TC_Tokens202::run()
 }
 
 /********************/
+
+struct TC_Tokens203 : public TestCase {
+  TC_Tokens203() : TestCase("TC_Tokens203") {;};
+  void run();
+};
+
+void
+TC_Tokens203::run()
+{
+  MemoryControl mc;
+  Alloc<REToken *> alloc;
+  alloc.setMC(&mc);
+
+  TokenList2 tlist(&mc, alloc);
+  tlist.build("a*");
+  TokenList2::TokList::iterator iter = tlist.m_toks.begin();
+
+  ASSERT_TRUE(tlist.equals(iter, TT_SELF_CHAR, 'a'));
+  iter++;
+  ASSERT_TRUE(tlist.equals(iter, TT_STAR));
+  this->setStatus(true);
+}
+
+/********************/
+
+struct TC_Tokens204 : public TestCase {
+  TC_Tokens204() : TestCase("TC_Tokens204") {;};
+  void run();
+};
+
+void
+TC_Tokens204::run()
+{
+  MemoryControl mc;
+  Alloc<REToken *> alloc;
+  alloc.setMC(&mc);
+
+  {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("a|b");
+    TokenList2::TokList::iterator iter = tlist.m_toks.begin();
+    ASSERT_TRUE(tlist.equals(iter, TT_SELF_CHAR, 'a'));
+    iter++;
+    ASSERT_TRUE(tlist.equals(iter, TT_PIPE));
+    iter++;
+    ASSERT_TRUE(tlist.equals(iter, TT_SELF_CHAR, 'b'));
+    iter++;
+    ASSERT_TRUE(iter == tlist.m_toks.end());
+  }
+
+  {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("ab");
+    TokenList2::TokList::iterator iter = tlist.m_toks.begin();
+    ASSERT_TRUE(tlist.equals(iter, TT_SELF_CHAR, 'a'));
+    iter++;
+    ASSERT_TRUE(tlist.equals(iter, TT_CCAT));
+    iter++;
+    ASSERT_TRUE(tlist.equals(iter, TT_SELF_CHAR, 'b'));
+    iter++;
+    ASSERT_TRUE(iter == tlist.m_toks.end());
+  }
+  
+  {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("abc");
+    TokenList2::TokList::iterator iter = tlist.m_toks.begin();
+    ASSERT_TRUE(tlist.equals(iter, TT_SELF_CHAR, 'a'));
+    iter++;
+    ASSERT_TRUE(tlist.equals(iter, TT_CCAT));
+    iter++;
+    ASSERT_TRUE(tlist.equals(iter, TT_SELF_CHAR, 'b'));
+    iter++;
+    ASSERT_TRUE(tlist.equals(iter, TT_CCAT, 'b'));
+    iter++;
+    ASSERT_TRUE(tlist.equals(iter, TT_SELF_CHAR, 'c'));
+    iter++;
+    ASSERT_TRUE(iter == tlist.m_toks.end());
+  }
+
+  {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("(a)");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNext(TT_LPAREN));
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
+    ASSERT_TRUE(tlist.verifyNext(TT_RPAREN));
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("[abc]");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNextCharClass("abc", 3));
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("[a-c]");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNextCharClass("abc", 3));
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("[-c]");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNextCharClass("-c", 2));
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("[a-cx-]");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNextCharClass("abcx-", 5));
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  this->setStatus(true);
+}
+
+/****************************************************/
+/****************************************************/
+/* postfix                                          */
+/****************************************************/
+/****************************************************/
 
 struct TC_Postfix01 : public TestCase {
   TC_Postfix01() : TestCase("TC_Postfix01") {;};
@@ -1238,6 +1368,8 @@ make_suite_all_tests()
 
   s->addTestCase(new TC_Tokens201());
   s->addTestCase(new TC_Tokens202());
+  s->addTestCase(new TC_Tokens203());
+  s->addTestCase(new TC_Tokens204());
 
   s->addTestCase(new TC_MemFail01());
   s->addTestCase(new TC_MemFail02());

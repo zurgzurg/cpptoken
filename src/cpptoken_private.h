@@ -157,6 +157,7 @@ struct TokenList2 {
   ~TokenList2();
 
   void build(const char *, size_t idx, size_t len);
+  void build(const char *);
 
   static void *operator new(size_t, MemoryControl *);
   static void operator delete(void *, MemoryControl *);
