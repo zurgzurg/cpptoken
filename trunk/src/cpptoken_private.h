@@ -47,8 +47,6 @@ enum TokType {
   TT_DOT,
 
   TT_QMARK,
-  TT_LBRACE,
-  TT_RBRACE,
   TT_LPAREN,
   TT_RPAREN,
 
@@ -56,6 +54,7 @@ enum TokType {
   TT_QUANTIFIER,
 
   TT_num      /* not an actual type */
+              /* number of token types */
 };
 
 /********************************/
@@ -82,9 +81,14 @@ struct REToken {
     
   REToken(TokenList *, TokType tt, uchar c='\0');
   REToken(TokenList2 *, TokType tt, uchar c='\0');
+  REToken(TokenList2 *, const REToken *);
 
   static void *operator new(size_t, MemoryControl *);
   static void operator delete(void *, MemoryControl *);
+
+  static int tokPrecidence[TT_num]; /* array holding precidence value for */
+  /* each token type - higher numbers have higher precidence */
+  static const char *tokName[TT_num];
 
 private:
   static void *operator new(size_t);
@@ -145,6 +149,7 @@ private:
 /********************************/
 struct TokenList2 {
   typedef list<REToken *, Alloc<REToken *> > TokList;
+  typedef list<REToken *> tmpTokList;
 
   MemoryControl *m_mc;
   TokList  m_toks;
@@ -158,6 +163,8 @@ struct TokenList2 {
 
   void build(const char *, size_t idx, size_t len);
   void build(const char *);
+  
+  void buildPostfix(TokenList2 *, tmpTokList *);
 
   static void *operator new(size_t, MemoryControl *);
   static void operator delete(void *, MemoryControl *);
@@ -174,8 +181,10 @@ struct TokenList2 {
   bool verifyNextQuantifier(bool, size_t v1, bool, size_t v2);
   bool verifyEnd();
 
-private:
+  // debug support
+  void dumpTokens();
 
+private:
   const uchar *buildQuantifier(const uchar *, const uchar *, const uchar *);
 
   const uchar *buildCharClass(const uchar *start,
@@ -189,7 +198,6 @@ private:
   void addTokenAndMaybeCcat(TokType, uchar = '\0');
   void maybeAddCcat(TokType);
 
-  void undoContructor(REToken *);
   void *operator new(size_t);
 };
 
