@@ -44,6 +44,7 @@ using namespace std;
 using namespace cpptoken;
 
 /********************************************************/
+
 REToken::REToken(TokenList *tlist, TokType tt, uchar c)
   : m_ttype(tt)
 {
@@ -57,8 +58,6 @@ REToken::REToken(TokenList *tlist, TokType tt, uchar c)
   case TT_STAR:
   case TT_DOT:
   case TT_QMARK:
-  case TT_LBRACE:
-  case TT_RBRACE:
   case TT_LPAREN:
   case TT_RPAREN:
     break;
@@ -95,8 +94,6 @@ REToken::REToken(TokenList2 *tlist, TokType tt, uchar c)
   case TT_STAR:
   case TT_DOT:
   case TT_QMARK:
-  case TT_LBRACE:
-  case TT_RBRACE:
   case TT_LPAREN:
   case TT_RPAREN:
     break;
@@ -110,6 +107,58 @@ REToken::REToken(TokenList2 *tlist, TokType tt, uchar c)
     this->u.m_quant.m_v2Valid = false;
     this->u.m_quant.m_v1 = 0;
     this->u.m_quant.m_v2 = 0;
+    break;
+
+  case TT_num:
+    break;
+  }
+
+  this->m_next = tlist->m_allREToks;
+  tlist->m_allREToks = this;
+}
+
+REToken::REToken(TokenList2 *tlist, const REToken *other)
+{
+  this->m_ttype = other->m_ttype;
+  switch (other->m_ttype) {
+  case TT_SELF_CHAR:
+    this->u.m_ch = other->u.m_ch;
+    break;
+
+  case TT_CCAT:
+  case TT_PIPE:
+  case TT_STAR:
+  case TT_DOT:
+  case TT_QMARK:
+  case TT_LPAREN:
+  case TT_RPAREN:
+    break;
+
+  case TT_CHAR_CLASS:
+    {
+      this->u.m_charClass = new UCharList(tlist->m_toks.get_allocator());
+      UCharList::const_iterator iter = other->u.m_charClass->begin();
+    }
+    break;
+
+  case TT_QUANTIFIER:
+    if (other->u.m_quant.m_v1Valid) {
+      this->u.m_quant.m_v1Valid = true;
+      this->u.m_quant.m_v1 = other->u.m_quant.m_v1;
+    }
+    else {
+      this->u.m_quant.m_v1Valid = false;
+      this->u.m_quant.m_v1 = 0;
+    }
+
+    if (other->u.m_quant.m_v2Valid) {
+      this->u.m_quant.m_v2Valid = true;
+      this->u.m_quant.m_v2 = other->u.m_quant.m_v2;
+    }
+    else {
+      this->u.m_quant.m_v2Valid = false;
+      this->u.m_quant.m_v2 = 0;
+    }
     break;
 
   case TT_num:
@@ -759,13 +808,7 @@ TokenList2::operator delete(void *ptr, MemoryControl *mc)
 
 TokenList2::~TokenList2()
 {
-  this->undoContructor(this->m_allREToks);
-  return;
-}
-
-void
-TokenList2::undoContructor(REToken *ptr)
-{
+  REToken *ptr = this->m_allREToks;
   while (ptr != NULL) {
     REToken *tmp = ptr->m_next;
     if (ptr->m_ttype == TT_CHAR_CLASS && ptr->u.m_charClass)
@@ -774,6 +817,17 @@ TokenList2::undoContructor(REToken *ptr)
     this->m_mc->deallocate(ptr, sizeof(*ptr));
     ptr = tmp;
   }
+
+  if (this->m_tmpCharList) {
+    delete this->m_tmpCharList;
+    this->m_tmpCharList = NULL;
+  }
+
+  if (this->m_tmpInvCharList) {
+    delete this->m_tmpInvCharList;
+    this->m_tmpInvCharList = NULL;
+  }
+  return;
 }
 
 /*******************************************************/
@@ -1143,6 +1197,136 @@ TokenList2::maybeAddCcat(TokType cur_tp)
 }
 
 /*******************************************************/
+
+
+/* precidence table for token types   */
+/* 0 means that precidence does not   */
+/* apply to this token - actual chars */
+/* for exaple - higher values have    */
+/* higher precidence. Must be in same */
+/* order as the TokType enums         */
+
+int REToken::tokPrecidence[TT_num] = {
+  0, /* TT_SELF_CHAR   */
+  2, /* TT_CCAT        */
+  1, /* TT_PIPE        */
+  3, /* TT_STAR        */
+
+  1, /* TT_DOT         */
+
+  3, /* TT_QMARK       */
+  4, /* TT_LPAREN      */
+  4, /* TT_RPAREN      */
+
+  4, /* TT_CHAR_CLASS */
+  5  /* TT_QUANTIFIER */
+};
+
+/*
+ Precidence
+
+  low
+     pipe
+     ccat
+
+     star
+  high
+
+  abc*
+     --> a ccat b ccat c star
+     --> (postfix) a b ccat c star ccat
+
+ ab|cd
+     --> a ccat b pipe c ccat d
+     --> (postfix) a b ccat c d ccat pipe
+
+  a|b*
+    --> a pipe b star
+    --> (postfix) a b star pipe
+
+ */
+
+const char *REToken::tokName[TT_num] = {
+  "self_char",
+  "CCAT",
+  "PIPE",
+  "STAR",
+
+  "DOT",
+
+  "QMARK",
+  "LPAREN",
+  "RPAREN",
+
+  "CHAR_CLASS",
+  "QUANTIFIER"
+  
+};
+
+/********************************************************/
+
+void
+TokenList2::buildPostfix(TokenList2 *infix, tmpTokList *tmpOpList)
+{
+  REToken *cur, *cur2, *other_op;
+
+  this->m_toks.clear();
+  tmpOpList->clear();
+
+  TokenList2::TokList::const_iterator iter = infix->m_toks.begin();
+  while (iter != infix->m_toks.end()) {
+    cur = *iter;
+
+    switch (cur->m_ttype) {
+    case TT_SELF_CHAR:
+      cur2 = new (this->m_mc) REToken(this, cur);
+      this->m_toks.push_back(cur2);
+      break;
+
+    case TT_LPAREN:
+      cur2 = new (this->m_mc) REToken(this, cur);
+      tmpOpList->push_back(cur2);
+      break;
+
+    case TT_CCAT:
+    case TT_PIPE:
+      while (! tmpOpList->empty()) {
+	other_op = tmpOpList->back();
+	if (other_op->m_ttype == TT_LPAREN)
+	  break;
+	if (REToken::tokPrecidence[cur->m_ttype]
+	    > REToken::tokPrecidence[other_op->m_ttype])
+	  break;
+	tmpOpList->pop_back();
+	this->m_toks.push_back(other_op);
+      }
+      cur2 = new (this->m_mc) REToken(this, cur);
+      tmpOpList->push_back(cur2);
+      break;
+
+    case TT_STAR:
+    case TT_QMARK:
+    case TT_RPAREN:
+    case TT_DOT:
+    case TT_CHAR_CLASS:
+    case TT_QUANTIFIER:
+    case TT_num:
+      break;
+    }
+
+    iter++;
+  }
+
+  while (! tmpOpList->empty()) {
+    other_op = tmpOpList->back();
+    tmpOpList->pop_back();
+    this->m_toks.push_back(other_op);
+  }
+
+  return;
+}
+
+/*******************************************************/
 bool
 TokenList2::equals(TokList::iterator iter, TokType tp, uchar ch)
 {
@@ -1285,4 +1469,24 @@ TokenList2::verifyEnd()
   if (this->m_iter == this->m_toks.end())
     return true;
   return false;
+}
+
+void
+TokenList2::dumpTokens()
+{
+  if (this->m_toks.empty()) {
+    cout << "Empty token list\n";
+    return;
+  }
+  cout << "Tokens:";
+  TokList::iterator iter = this->m_toks.begin();
+  while (iter != this->m_toks.end()) {
+    REToken *tok = *iter;
+    if (tok->m_ttype == TT_SELF_CHAR)
+      cout << " '" << tok->u.m_ch << "'";
+    else
+      cout << " " << REToken::tokName[ tok->m_ttype ];
+    iter++;
+  }
+  cout << "\n";
 }

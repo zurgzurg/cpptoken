@@ -1235,12 +1235,473 @@ TC_Tokens204::run()
   this->setStatus(true);
 }
 
+/********************/
+
+struct TC_Tokens205 : public TestCase {
+  TC_Tokens205() : TestCase("TC_Tokens205") {;};
+  void run();
+};
+
+void
+TC_Tokens205::run()
+{
+  MemoryControl mc;
+  Alloc<REToken *> alloc;
+  alloc.setMC(&mc);
+
+  {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("[^abc]");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyCharClassLength(256 - 3));
+    tlist.incrementIterator();
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("[^abc]");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyCharClassMember('z'));
+    ASSERT_TRUE( ! tlist.verifyCharClassMember('a'));
+    tlist.incrementIterator();
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  this->setStatus(true);
+}
+
+/********************/
+
+struct TC_Tokens206 : public TestCase {
+  TC_Tokens206() : TestCase("TC_Tokens206") {;};
+  void run();
+};
+
+void
+TC_Tokens206::run()
+{
+  MemoryControl mc;
+  Alloc<REToken *> alloc;
+  alloc.setMC(&mc);
+
+  {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("a{1,2}");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
+    ASSERT_TRUE(tlist.verifyNextQuantifier(true, 1, true, 2));
+    tlist.incrementIterator();
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("a{10,20}");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
+    ASSERT_TRUE(tlist.verifyNextQuantifier(true, 10, true, 20));
+    tlist.incrementIterator();
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("a{ 10,20}");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
+    ASSERT_TRUE(tlist.verifyNextQuantifier(true, 10, true, 20));
+    tlist.incrementIterator();
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("a{ 10 , 20}");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
+    ASSERT_TRUE(tlist.verifyNextQuantifier(true, 10, true, 20));
+    tlist.incrementIterator();
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("a{ 2 , 3 }");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
+    ASSERT_TRUE(tlist.verifyNextQuantifier(true, 2, true, 3));
+    tlist.incrementIterator();
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("a{2,}");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
+    ASSERT_TRUE(tlist.verifyNextQuantifier(true, 2, false, 0));
+    tlist.incrementIterator();
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("a{ 23 ,}");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
+    ASSERT_TRUE(tlist.verifyNextQuantifier(true, 23, false, 0));
+    tlist.incrementIterator();
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("a{ 23, }");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
+    ASSERT_TRUE(tlist.verifyNextQuantifier(true, 23, false, 0));
+    tlist.incrementIterator();
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("a{2}");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
+    ASSERT_TRUE(tlist.verifyNextQuantifier(true, 2, false, 0));
+    tlist.incrementIterator();
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("a{ 2 }");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
+    ASSERT_TRUE(tlist.verifyNextQuantifier(true, 2, false, 0));
+    tlist.incrementIterator();
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("a{ 22 }");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
+    ASSERT_TRUE(tlist.verifyNextQuantifier(true, 22, false, 0));
+    tlist.incrementIterator();
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("a{,3}");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
+    ASSERT_TRUE(tlist.verifyNextQuantifier(false, 0, true, 3));
+    tlist.incrementIterator();
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  this->setStatus(true);
+}
+
+
+/********************/
+
+struct TC_Tokens207 : public TestCase {
+  TC_Tokens207() : TestCase("TC_Tokens207") {;};
+  void run();
+};
+
+void
+TC_Tokens207::run()
+{
+  MemoryControl mc;
+  Alloc<REToken *> alloc;
+  alloc.setMC(&mc);
+
+  try {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("{2 2}");
+    ASSERT_TRUE(false);
+  }
+  catch (const SyntaxError &e) {
+    ASSERT_TRUE(e.getErrorIndex() == 3);
+  }
+
+  try {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("{2  2}");
+    ASSERT_TRUE(false);
+  }
+  catch (const SyntaxError &e) {
+    ASSERT_TRUE(e.getErrorIndex() == 4);
+  }
+
+  try {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("{2-}");
+    ASSERT_TRUE(false);
+  }
+  catch (const SyntaxError &e) {
+    ASSERT_TRUE(e.getErrorIndex() == 2);
+  }
+
+  try {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("{9999999999999999999999999999999999999999999}");
+    ASSERT_TRUE(false);
+  }
+  catch (const SyntaxError &e) {
+    ASSERT_TRUE(true);
+  }
+
+  try {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("{9, 99999999999999999999999999999999999999999999}");
+    ASSERT_TRUE(false);
+  }
+  catch (const SyntaxError &e) {
+    ASSERT_TRUE(true);
+  }
+
+  this->setStatus(true);
+}
+
+/********************/
+
+struct TC_Tokens208 : public TestCase {
+  TC_Tokens208() : TestCase("TC_Tokens208") {;};
+  void run();
+};
+
+void
+TC_Tokens208::run()
+{
+  MemoryControl mc;
+  Alloc<REToken *> alloc;
+  alloc.setMC(&mc);
+
+  try {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("a[b");
+    ASSERT_TRUE(false);
+  }
+  catch (const SyntaxError &e) {
+    ASSERT_TRUE(e.getErrorIndex() == 1);
+  }
+
+  this->setStatus(true);
+}
+
+/********************/
+
+struct TC_MemFail2_02 : public TestCase {
+  TC_MemFail2_02() : TestCase("TC_MemFail2_02") {;};
+  void run();
+};
+
+void
+TC_MemFail2_02::run()
+{
+  MemoryControlWithFailure mc;
+  mc.resetCounters();
+  mc.disableLimit();
+  Alloc<REToken *> alloc;
+  alloc.setMC(&mc);
+
+  {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("a");
+  }
+
+  size_t numAllocs = mc.m_numAllocs;
+  for (size_t lim = 0; lim < numAllocs; lim++) {
+
+    mc.resetCounters();
+    mc.setLimit(lim);
+
+    try {
+      TokenList2 tlist2(&mc, alloc);
+      tlist2.build("a");
+      ASSERT_TRUE(false);
+    }
+    catch (const bad_alloc &e) {
+      ASSERT_TRUE(true);
+    }
+  }
+
+  this->setStatus(true);
+}
+
+/********************/
+
+struct TC_MemFail2_03 : public TestCase {
+  TC_MemFail2_03() : TestCase("TC_MemFail2_03") {;};
+  void run();
+};
+
+void
+TC_MemFail2_03::run()
+{
+  MemoryControlWithFailure mc;
+  mc.resetCounters();
+  mc.disableLimit();
+  Alloc<REToken *> alloc;
+  alloc.setMC(&mc);
+
+  {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("[a-z]");
+  }
+
+  size_t numAllocs = mc.m_numAllocs;
+  for (size_t lim = 0; lim < numAllocs; lim++) {
+
+    mc.resetCounters();
+    mc.setLimit(lim);
+
+    try {
+      TokenList2 tlist(&mc, alloc);
+      tlist.build("[a-z]");
+      ASSERT_TRUE(false);
+    }
+    catch (const bad_alloc &e) {
+      ASSERT_TRUE(true);
+    }
+  }
+  this->setStatus(true);
+}
+
+/********************/
+
+struct TC_MemFail2_04 : public TestCase {
+  TC_MemFail2_04() : TestCase("TC_MemFail2_04") {;};
+  void checkOneRegex(MemoryControlWithFailure &,
+		     Alloc<REToken *>& alloc,
+		     const char *re);
+  void run();
+};
+
+void
+TC_MemFail2_04::checkOneRegex(MemoryControlWithFailure &mc,
+			    Alloc<REToken *>& alloc,
+			    const char *regex)
+{
+  {
+    mc.resetCounters();
+    mc.disableLimit();
+    TokenList2 tlist(&mc, alloc);
+    tlist.build(regex);
+  }
+  
+  size_t numAllocs = mc.m_numAllocs;
+  for (size_t lim = 0; lim < numAllocs; lim++) {
+
+    mc.resetCounters();
+    mc.setLimit(lim);
+
+    try {
+      TokenList2 tlist(&mc, alloc);
+      tlist.build(regex);
+      ASSERT_TRUE(false);
+    }
+    catch (const bad_alloc &e) {
+      ASSERT_TRUE(true);
+    }
+  }
+}
+
+void
+TC_MemFail2_04::run()
+{
+  MemoryControlWithFailure mc;
+  mc.resetCounters();
+  mc.disableLimit();
+  Alloc<REToken *> alloc;
+  alloc.setMC(&mc);
+
+  this->checkOneRegex(mc, alloc, "abc");
+  this->checkOneRegex(mc, alloc, "a{2,10}");
+  this->checkOneRegex(mc, alloc, "a");
+  this->checkOneRegex(mc, alloc, "a{2}");
+
+  this->setStatus(true);
+}
+
+/********************/
+
+struct TC_MemFail2_05 : public TestCase {
+  TC_MemFail2_05() : TestCase("TC_MemFail2_05") {;};
+  void expectFailure(MemoryControlWithFailure &,
+		     Alloc<REToken *>& alloc,
+		     const char *re);
+  void run();
+};
+
+void
+TC_MemFail2_05::expectFailure(MemoryControlWithFailure &mc,
+			    Alloc<REToken *>& alloc,
+			    const char *regex)
+{
+  {
+    mc.resetCounters();
+    mc.disableLimit();
+    try {
+      TokenList2 tlist(&mc, alloc);
+      tlist.build(regex);
+      ASSERT_TRUE(false);
+    }
+    catch (const SyntaxError &e) {
+      ASSERT_TRUE(true);
+    }
+  }
+  
+  size_t numAllocs = mc.m_numAllocs;
+  for (size_t lim = 0; lim < numAllocs; lim++) {
+
+    mc.resetCounters();
+    mc.setLimit(lim);
+
+    try {
+      TokenList2 tlist(&mc, alloc);
+      tlist.build(regex);
+      ASSERT_TRUE(false);
+    }
+    catch (const bad_alloc &e) {
+      ASSERT_TRUE(true);
+    }
+    catch (const SyntaxError &e) {
+      ASSERT_TRUE(true);
+    }
+  }
+}
+
+void
+TC_MemFail2_05::run()
+{
+  MemoryControlWithFailure mc;
+  mc.resetCounters();
+  mc.disableLimit();
+  Alloc<REToken *> alloc;
+  alloc.setMC(&mc);
+
+  this->expectFailure(mc, alloc, "{2 2}");
+  this->expectFailure(mc, alloc, "{2 - }");
+  this->expectFailure(mc, alloc, "{999999999999999999999999999999999");
+  this->expectFailure(mc, alloc, "a{2,99999999999999999999999999999999999}");
+
+  this->setStatus(true);
+}
+
 /****************************************************/
 /****************************************************/
 /* postfix                                          */
 /****************************************************/
 /****************************************************/
-
 struct TC_Postfix01 : public TestCase {
   TC_Postfix01() : TestCase("TC_Postfix01") {;};
   void run();
@@ -1250,10 +1711,171 @@ struct TC_Postfix01 : public TestCase {
 void
 TC_Postfix01::run()
 {
-  ;
+  MemoryControl mc;
+  Alloc<REToken *> alloc;
+  alloc.setMC(&mc);
+
+  TokenList2 tlist(&mc, alloc);
+  tlist.build("a", 0, 1);
+  TokenList2 tlist2(&mc, alloc);
+  TokenList2::tmpTokList tmpList;
+  tlist2.buildPostfix(&tlist, &tmpList);
+
+  tlist2.beginIteration();
+  ASSERT_TRUE(tlist2.verifyNext(TT_SELF_CHAR, 'a'));
+  ASSERT_TRUE(tlist2.verifyEnd());
+
+  this->setStatus(true);
 }
 
 /********************/
+struct TC_Postfix02 : public TestCase {
+  TC_Postfix02() : TestCase("TC_Postfix02") {;};
+  void run();
+};
+
+
+void
+TC_Postfix02::run()
+{
+  MemoryControl mc;
+  Alloc<REToken *> alloc;
+  alloc.setMC(&mc);
+
+  TokenList2 tlist(&mc, alloc);
+  tlist.build("ab");
+
+  TokenList2 tlist2(&mc, alloc);
+  TokenList2::tmpTokList tmpList;
+  tlist2.buildPostfix(&tlist, &tmpList);
+
+  tlist2.beginIteration();
+  ASSERT_TRUE(tlist2.verifyNext(TT_SELF_CHAR, 'a'));
+  ASSERT_TRUE(tlist2.verifyNext(TT_SELF_CHAR, 'b'));
+  ASSERT_TRUE(tlist2.verifyNext(TT_CCAT));
+  ASSERT_TRUE(tlist2.verifyEnd());
+
+  this->setStatus(true);
+}
+
+/********************/
+
+struct TC_Postfix03 : public TestCase {
+  TC_Postfix03() : TestCase("TC_Postfix03") {;};
+  void run();
+};
+
+
+void
+TC_Postfix03::run()
+{
+  MemoryControl mc;
+  Alloc<REToken *> alloc;
+  alloc.setMC(&mc);
+
+  TokenList2 tlist(&mc, alloc);
+  tlist.build("ab", 0, 2);
+  TokenList2 tlist2(&mc, alloc);
+  TokenList2::tmpTokList tmpList;
+  tlist2.buildPostfix(&tlist, &tmpList);
+
+  tlist2.beginIteration();
+  ASSERT_TRUE(tlist2.verifyNext(TT_SELF_CHAR, 'a'));
+  ASSERT_TRUE(tlist2.verifyNext(TT_SELF_CHAR, 'b'));
+  ASSERT_TRUE(tlist2.verifyNext(TT_CCAT));
+  ASSERT_TRUE(tlist2.verifyEnd());
+
+  this->setStatus(true);
+}
+
+/********************/
+
+struct TC_Postfix04 : public TestCase {
+  TC_Postfix04() : TestCase("TC_Postfix04") {;};
+  void run();
+};
+
+
+void
+TC_Postfix04::run()
+{
+  MemoryControl mc;
+  Alloc<REToken *> alloc;
+  alloc.setMC(&mc);
+
+  TokenList2 tlist(&mc, alloc);
+  tlist.build("ab|cd");
+  TokenList2 tlist2(&mc, alloc);
+  TokenList2::tmpTokList tmpList;
+  tlist2.buildPostfix(&tlist, &tmpList);
+
+  tlist2.beginIteration();
+  ASSERT_TRUE(tlist2.verifyNext(TT_SELF_CHAR, 'a'));
+  ASSERT_TRUE(tlist2.verifyNext(TT_SELF_CHAR, 'b'));
+  ASSERT_TRUE(tlist2.verifyNext(TT_CCAT));
+  ASSERT_TRUE(tlist2.verifyNext(TT_SELF_CHAR, 'c'));
+  ASSERT_TRUE(tlist2.verifyNext(TT_SELF_CHAR, 'd'));
+  ASSERT_TRUE(tlist2.verifyNext(TT_CCAT));
+  ASSERT_TRUE(tlist2.verifyNext(TT_PIPE));
+  ASSERT_TRUE(tlist2.verifyEnd());
+
+  this->setStatus(true);
+}
+
+/********************/
+
+struct TC_Postfix_MemFail_01 : public TestCase {
+  TC_Postfix_MemFail_01() : TestCase("TC_Postfix_MemFail_01") {;};
+  void run();
+};
+
+void
+TC_Postfix_MemFail_01::run()
+{
+  MemoryControlWithFailure mc;
+  mc.resetCounters();
+  mc.disableLimit();
+  Alloc<REToken *> alloc;
+  alloc.setMC(&mc);
+
+  {
+    TokenList2 tlist1(&mc, alloc);
+    TokenList2 tlist2(&mc, alloc);
+    TokenList2::tmpTokList tmpList;
+
+    tlist1.build("a");
+    tlist2.buildPostfix(&tlist1, &tmpList);
+  }
+
+  size_t numAllocs = mc.m_numAllocs;
+  for (size_t lim = 0; lim < numAllocs; lim++) {
+    mc.resetCounters();
+    mc.setLimit(lim);
+
+    try {
+      TokenList2 tlist1(&mc, alloc);
+      tlist1.build("a");
+
+      TokenList2 tlist2(&mc, alloc);
+      TokenList2::tmpTokList tmpList;
+
+      tlist2.buildPostfix(&tlist1, &tmpList);
+      ASSERT_TRUE(false);
+    }
+    catch (const bad_alloc &e) {
+      ASSERT_TRUE(true);
+    }
+  }
+
+  this->setStatus(true);
+}
+
+
+/****************************************************/
+/****************************************************/
+/* Build larger objs                                */
+/****************************************************/
+/****************************************************/
 
 struct TC_BuilderBasic01 : public TestCase {
   TC_BuilderBasic01() : TestCase("TC_BuilderBasic01") {;};
@@ -1370,6 +1992,10 @@ make_suite_all_tests()
   s->addTestCase(new TC_Tokens202());
   s->addTestCase(new TC_Tokens203());
   s->addTestCase(new TC_Tokens204());
+  s->addTestCase(new TC_Tokens205());
+  s->addTestCase(new TC_Tokens206());
+  s->addTestCase(new TC_Tokens207());
+  s->addTestCase(new TC_Tokens208());
 
   s->addTestCase(new TC_MemFail01());
   s->addTestCase(new TC_MemFail02());
@@ -1377,7 +2003,17 @@ make_suite_all_tests()
   s->addTestCase(new TC_MemFail04());
   s->addTestCase(new TC_MemFail05());
 
+  s->addTestCase(new TC_MemFail2_02());
+  s->addTestCase(new TC_MemFail2_03());
+  s->addTestCase(new TC_MemFail2_04());
+  s->addTestCase(new TC_MemFail2_05());
+
   s->addTestCase(new TC_Postfix01());
+  s->addTestCase(new TC_Postfix02());
+  s->addTestCase(new TC_Postfix03());
+  s->addTestCase(new TC_Postfix04());
+
+  s->addTestCase(new TC_Postfix_MemFail_01());
 
   s->addTestCase(new TC_BuilderBasic01());
   s->addTestCase(new TC_BuilderBasic02());
