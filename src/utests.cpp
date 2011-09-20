@@ -474,6 +474,20 @@ TC_Tokens04::run()
   }
   
   {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("a(b)c");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
+    ASSERT_TRUE(tlist.verifyNext(TT_CCAT));
+    ASSERT_TRUE(tlist.verifyNext(TT_LPAREN));
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'b'));
+    ASSERT_TRUE(tlist.verifyNext(TT_RPAREN));
+    ASSERT_TRUE(tlist.verifyNext(TT_CCAT));
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'c'));
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  {
     TokenList tlist(&mc, alloc, "abc");
     TokenList::TokList::iterator iter = tlist.m_toks.begin();
     ASSERT_TRUE(tlist.equals(iter, TT_SELF_CHAR, 'a'));
@@ -1824,6 +1838,44 @@ TC_Postfix04::run()
 
 /********************/
 
+struct TC_Postfix05 : public TestCase {
+  TC_Postfix05() : TestCase("TC_Postfix05") {;};
+  void run();
+};
+
+
+void
+TC_Postfix05::run()
+{
+  MemoryControl mc;
+  Alloc<REToken *> alloc;
+  alloc.setMC(&mc);
+
+  TokenList2 tlist(&mc, alloc);
+  tlist.build("a(b|c)d");
+  TokenList2 tlist2(&mc, alloc);
+  TokenList2::tmpTokList tmpList;
+  tlist2.buildPostfix(&tlist, &tmpList);
+
+  cout << "Toks=";
+  tlist.dumpTokens();
+  tlist2.dumpTokens();
+
+  tlist2.beginIteration();
+  ASSERT_TRUE(tlist2.verifyNext(TT_SELF_CHAR, 'a'));
+  ASSERT_TRUE(tlist2.verifyNext(TT_SELF_CHAR, 'b'));
+  ASSERT_TRUE(tlist2.verifyNext(TT_SELF_CHAR, 'c'));
+  ASSERT_TRUE(tlist2.verifyNext(TT_PIPE));
+  ASSERT_TRUE(tlist2.verifyNext(TT_CCAT));
+  ASSERT_TRUE(tlist2.verifyNext(TT_SELF_CHAR, 'd'));
+  ASSERT_TRUE(tlist2.verifyNext(TT_CCAT));
+  ASSERT_TRUE(tlist2.verifyEnd());
+
+  this->setStatus(true);
+}
+
+/********************/
+
 struct TC_Postfix_MemFail_01 : public TestCase {
   TC_Postfix_MemFail_01() : TestCase("TC_Postfix_MemFail_01") {;};
   void run();
@@ -2012,6 +2064,7 @@ make_suite_all_tests()
   s->addTestCase(new TC_Postfix02());
   s->addTestCase(new TC_Postfix03());
   s->addTestCase(new TC_Postfix04());
+  s->addTestCase(new TC_Postfix05());
 
   s->addTestCase(new TC_Postfix_MemFail_01());
 

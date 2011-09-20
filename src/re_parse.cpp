@@ -120,6 +120,7 @@ REToken::REToken(TokenList2 *tlist, TokType tt, uchar c)
 REToken::REToken(TokenList2 *tlist, const REToken *other)
 {
   this->m_ttype = other->m_ttype;
+
   switch (other->m_ttype) {
   case TT_SELF_CHAR:
     this->u.m_ch = other->u.m_ch;
@@ -1176,15 +1177,13 @@ TokenList2::maybeAddCcat(TokType cur_tp)
   if (this->m_toks.empty())
     return;
 
-  if (cur_tp == TT_LPAREN || cur_tp == TT_RPAREN)
+  if (cur_tp == TT_RPAREN)
     return;
 
-  TokList::iterator iter = this->m_toks.end();
-  iter--;
-
-  REToken *tok = *iter;
+  REToken *tok = this->m_toks.back();
 
   switch (tok->m_ttype) {
+  case TT_RPAREN:
   case TT_SELF_CHAR:
     tok = new (this->m_mc) REToken(this, TT_CCAT);
     this->m_toks.push_back(tok);
@@ -1284,8 +1283,26 @@ TokenList2::buildPostfix(TokenList2 *infix, tmpTokList *tmpOpList)
       break;
 
     case TT_LPAREN:
-      cur2 = new (this->m_mc) REToken(this, cur);
-      tmpOpList->push_back(cur2);
+      // no need to create duplicate tokens for LPAREN / RPAREN
+      // since they will not be in the final result
+      tmpOpList->push_back(cur);
+      break;
+
+    case TT_RPAREN:
+      {
+	bool lparen_found = false;
+	while (!tmpOpList->empty()) {
+	  other_op = tmpOpList->back();
+	  tmpOpList->pop_back();
+	  if (other_op->m_ttype == TT_LPAREN) {
+	    lparen_found = true;
+	    break;
+	  }
+	  this->m_toks.push_back(other_op);
+	}
+	if (!lparen_found)
+	  throw SyntaxError(0, "Unbalanced parenthesis");
+      }
       break;
 
     case TT_CCAT:
@@ -1306,7 +1323,6 @@ TokenList2::buildPostfix(TokenList2 *infix, tmpTokList *tmpOpList)
 
     case TT_STAR:
     case TT_QMARK:
-    case TT_RPAREN:
     case TT_DOT:
     case TT_CHAR_CLASS:
     case TT_QUANTIFIER:
