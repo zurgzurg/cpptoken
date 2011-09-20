@@ -1,0 +1,8 @@
+- completely change TokenList --> TokenList2
+- track char position in REToken() to generate better error messages
+
+- need more parsing tests
+   \ ch
+   programmatic sequences - two chars, three chars,  char classes
+
+- need more parsing error cases
