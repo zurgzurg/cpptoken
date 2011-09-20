@@ -474,20 +474,6 @@ TC_Tokens04::run()
   }
   
   {
-    TokenList2 tlist(&mc, alloc);
-    tlist.build("a(b)c");
-    tlist.beginIteration();
-    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
-    ASSERT_TRUE(tlist.verifyNext(TT_CCAT));
-    ASSERT_TRUE(tlist.verifyNext(TT_LPAREN));
-    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'b'));
-    ASSERT_TRUE(tlist.verifyNext(TT_RPAREN));
-    ASSERT_TRUE(tlist.verifyNext(TT_CCAT));
-    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'c'));
-    ASSERT_TRUE(tlist.verifyEnd());
-  }
-
-  {
     TokenList tlist(&mc, alloc, "abc");
     TokenList::TokList::iterator iter = tlist.m_toks.begin();
     ASSERT_TRUE(tlist.equals(iter, TT_SELF_CHAR, 'a'));
@@ -1189,6 +1175,28 @@ TC_Tokens204::run()
   
   {
     TokenList2 tlist(&mc, alloc);
+    tlist.build("a(b)c");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
+    ASSERT_TRUE(tlist.verifyNext(TT_CCAT));
+    ASSERT_TRUE(tlist.verifyNext(TT_LPAREN));
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'b'));
+    ASSERT_TRUE(tlist.verifyNext(TT_RPAREN));
+    ASSERT_TRUE(tlist.verifyNext(TT_CCAT));
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'c'));
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("\\a");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, 'a'));
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  {
+    TokenList2 tlist(&mc, alloc);
     tlist.build("abc");
     TokenList2::TokList::iterator iter = tlist.m_toks.begin();
     ASSERT_TRUE(tlist.equals(iter, TT_SELF_CHAR, 'a'));
@@ -1856,10 +1864,6 @@ TC_Postfix05::run()
   TokenList2 tlist2(&mc, alloc);
   TokenList2::tmpTokList tmpList;
   tlist2.buildPostfix(&tlist, &tmpList);
-
-  cout << "Toks=";
-  tlist.dumpTokens();
-  tlist2.dumpTokens();
 
   tlist2.beginIteration();
   ASSERT_TRUE(tlist2.verifyNext(TT_SELF_CHAR, 'a'));
