@@ -851,6 +851,14 @@ TokenList2::build(const char *regex, size_t start, size_t len)
     ch = *ptr;
     
     switch (ch) {
+    case '\\':
+      ptr++;
+      if (ptr > last_valid)
+	throw SyntaxError(0, "illegal backslash at end of regex");
+      ch = *ptr;
+      this->addTokenAndMaybeCcat(TT_SELF_CHAR, ch);
+      break;
+
     case '*':
       this->simpleAddToken(TT_STAR);
       break;
