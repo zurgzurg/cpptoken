@@ -1521,6 +1521,56 @@ TC_Tokens208::run()
 
 /********************/
 
+struct TC_Tokens209 : public TestCase {
+  TC_Tokens209() : TestCase("TC_Tokens209") {;};
+  void run();
+};
+
+void
+TC_Tokens209::run()
+{
+  MemoryControl mc;
+  Alloc<REToken *> alloc;
+  alloc.setMC(&mc);
+
+  for (char c1 = ' '; c1 <= '~'; c1++) {
+    TokenList2 tlist(&mc, alloc);
+    char buf[3];
+
+    switch (c1) {
+    case '(':
+    case ')':
+    case '[':
+    case ']':
+    case '{':
+    case '}':
+    case '\\':
+    case '*':
+    case '?':
+    case '+':
+    case '|':
+      buf[0] = '\\';
+      buf[1] = c1;
+      buf[2] = '\0';
+      break;
+    default:
+      buf[0] = c1;
+      buf[1] = '\0';
+      buf[2] = '\0';
+      break;
+    }
+
+    tlist.build(buf);
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, c1));
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
+  this->setStatus(true);
+}
+
+/********************/
+
 struct TC_MemFail2_02 : public TestCase {
   TC_MemFail2_02() : TestCase("TC_MemFail2_02") {;};
   void run();
@@ -2052,6 +2102,7 @@ make_suite_all_tests()
   s->addTestCase(new TC_Tokens206());
   s->addTestCase(new TC_Tokens207());
   s->addTestCase(new TC_Tokens208());
+  s->addTestCase(new TC_Tokens209());
 
   s->addTestCase(new TC_MemFail01());
   s->addTestCase(new TC_MemFail02());
