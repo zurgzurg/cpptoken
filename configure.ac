@@ -30,6 +30,11 @@ if test "x${have_pthreads}" = "xyes"; then
   AC_CHECK_HEADERS([pthread.h], [], [have_pthreads=no])
 fi
   
+AC_CHECK_PROGS([DOXYGEN], [doxygen])
+if test -z "$DOXYGEN"; then
+   AC_MSG_WARN([Doxygen not found - continuing without doxygen support])
+fi
+
 AC_CONFIG_HEADERS([src/config.h])
 AC_CHECK_HEADERS([unistd.h cstddef cstring exception list sstream iostream],,
                  [AC_MSG_ERROR([Required header files missing.])])
@@ -43,4 +48,5 @@ echo "Summary of options"
 echo ""
 echo "Use multi-threading          ${mt_exec}"
 echo "valgrind path                ${VALGRIND}"
+echo "using doxygen                ${DOXYGEN}"
 echo ""

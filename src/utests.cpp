@@ -57,7 +57,7 @@ class TestFailure : public exception {
   static int numActive;
 
 public:
-  TestFailure(const char *file, int line);
+  TestFailure(const char *file, int line, size_t numAsserts);
   ~TestFailure() throw() {;};
 
   const char *what() const throw();
@@ -68,13 +68,17 @@ public:
 
 int TestFailure::numActive = 0;
 
-TestFailure::TestFailure(const char *file, int line)
+TestFailure::TestFailure(const char *file, int line, size_t assertNum)
 {
   stringstream tmp;
   tmp << "TestFailure excecption: ";
   tmp << file;
   tmp << ":";
   tmp << line;
+  if (assertNum > 0) {
+    tmp << " assert number ";
+    tmp << assertNum;
+  }
   tmp << "\n";
   this->msg = tmp.str();
   TestFailure::numActive++;
@@ -200,7 +204,11 @@ TestCase::assertTrue(bool c, const char *fname, int line)
     return;
   if (TestFailure::getNumActive() > 0)
     return;
-  throw TestFailure(fname, line);
+
+  size_t n_asserts = 0;
+  if (this->result)
+    n_asserts = this->result->n_asserts;
+  throw TestFailure(fname, line, n_asserts);
 }
 
 void
@@ -835,7 +843,7 @@ MemoryControlWithFailure::~MemoryControlWithFailure()
     return;
   if (this->m_numAllocs != this->m_numDeallocs
       && TestFailure::getNumActive() == 0)
-    throw TestFailure(__FILE__, __LINE__);
+    throw TestFailure(__FILE__, __LINE__, 0);
 }
 
 void *
@@ -1571,6 +1579,85 @@ TC_Tokens209::run()
 
 /********************/
 
+struct TC_Tokens210 : public TestCase {
+  TC_Tokens210() : TestCase("TC_Tokens210") {;};
+  void run();
+};
+
+void
+TC_Tokens210::run()
+{
+  MemoryControl mc;
+  Alloc<REToken *> alloc;
+  alloc.setMC(&mc);
+
+  for (char c1 = ' '; c1 <= '~'; c1++) {
+    char buf[5];
+
+    int idx = 0;
+    switch (c1) {
+    case '(':
+    case ')':
+    case '[':
+    case ']':
+    case '{':
+    case '}':
+    case '\\':
+    case '*':
+    case '?':
+    case '+':
+    case '|':
+      buf[idx++] = '\\';
+      buf[idx++] = c1;
+      break;
+    default:
+      buf[idx++] = c1;
+      break;
+    }
+
+    for (char c2 = ' '; c2 <= '~'; c2++) {
+      TokenList2 tlist(&mc, alloc);
+
+      int idx2 = idx;
+
+      switch (c2) {
+      case '(':
+      case ')':
+      case '[':
+      case ']':
+      case '{':
+      case '}':
+      case '\\':
+      case '*':
+      case '?':
+      case '+':
+      case '|':
+	buf[idx2++] = '\\';
+	buf[idx2++] = c2;
+	break;
+      default:
+	buf[idx2++] = c2;
+	break;
+      }
+
+      while (idx2 <= 4)
+	buf[idx2++] = '\0';
+
+      tlist.build(buf);
+
+      tlist.beginIteration();
+      ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, c1));
+      ASSERT_TRUE(tlist.verifyNext(TT_CCAT));
+      ASSERT_TRUE(tlist.verifyNext(TT_SELF_CHAR, c2));
+      ASSERT_TRUE(tlist.verifyEnd());
+    }
+  }
+
+  this->setStatus(true);
+}
+
+/********************/
+
 struct TC_MemFail2_02 : public TestCase {
   TC_MemFail2_02() : TestCase("TC_MemFail2_02") {;};
   void run();
@@ -2103,6 +2190,7 @@ make_suite_all_tests()
   s->addTestCase(new TC_Tokens207());
   s->addTestCase(new TC_Tokens208());
   s->addTestCase(new TC_Tokens209());
+  s->addTestCase(new TC_Tokens210());
 
   s->addTestCase(new TC_MemFail01());
   s->addTestCase(new TC_MemFail02());
