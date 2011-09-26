@@ -3,7 +3,8 @@ Not Done
 - completely change TokenList --> TokenList2
 - track char position in REToken() to generate better error messages
 - parsing - hex chars
-- parsing tests - programmatic sequences - two chars, three chars,  char classes
+- parsing tests - programmatic sequences - three chars
+- parsing tests - programmatic sequences - char classes
 - need more parsing error cases
 - char should be uchar in tokenlist
 
@@ -15,3 +16,5 @@ Unknown
 Done
 ----------------
 - parsing tests -  \ ch
+- parsing tests - programmatic sequences - one char
+- parsing tests - programmatic sequences - two chars
