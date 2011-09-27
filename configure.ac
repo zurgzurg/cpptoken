@@ -30,10 +30,10 @@ if test "x${have_pthreads}" = "xyes"; then
   AC_CHECK_HEADERS([pthread.h], [], [have_pthreads=no])
 fi
   
-AC_CHECK_PROGS([DOXYGEN], [doxygen])
-if test -z "$DOXYGEN"; then
-   AC_MSG_WARN([Doxygen not found - continuing without doxygen support])
-fi
+DX_DOXYGEN_FEATURE(ON)
+DX_HTML_FEATURE(ON)
+DX_PDF_FEATURE(OFF)
+DX_INIT_DOXYGEN([cpptoken], [Doxygen])
 
 AC_CONFIG_HEADERS([src/config.h])
 AC_CHECK_HEADERS([unistd.h cstddef cstring exception list sstream iostream],,
@@ -48,5 +48,4 @@ echo "Summary of options"
 echo ""
 echo "Use multi-threading          ${mt_exec}"
 echo "valgrind path                ${VALGRIND}"
-echo "using doxygen                ${DOXYGEN}"
 echo ""
