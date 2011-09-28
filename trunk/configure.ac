@@ -46,6 +46,6 @@ AC_OUTPUT
 echo ""
 echo "Summary of options"
 echo ""
-echo "Use multi-threading          ${mt_exec}"
-echo "valgrind path                ${VALGRIND}"
+echo "AS_HELP_STRING([Use multi-threading],[${mt_exec}])"
+echo "AS_HELP_STRING([valgrind path],[${VALGRIND}])"
 echo ""
