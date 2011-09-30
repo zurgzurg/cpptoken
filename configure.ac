@@ -13,6 +13,7 @@ AC_LANG([C++])
 
 CXXFLAGS="-g -O0"
 
+AX_CXX_HAVE_STL
 
 AC_PROG_LIBTOOL
 
@@ -48,4 +49,10 @@ echo "Summary of options"
 echo ""
 echo "AS_HELP_STRING([Use multi-threading],[${mt_exec}])"
 echo "AS_HELP_STRING([valgrind path],[${VALGRIND}])"
+echo "AS_HELP_STRING([Have STL],[${ax_cxx_have_stl}])"
+AS_IF([test "x${DX_DOXYGEN}" = "x"],
+      [echo "AS_HELP_STRING([Using doxygen],[no])"],
+      [echo "AS_HELP_STRING([Using doxygen at],[${DX_DOXYGEN}])"])
+
+
 echo ""
