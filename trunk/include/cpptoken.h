@@ -42,7 +42,9 @@ class REToken;
 struct TokenList2;
 struct PatternAction;
 
-/*******************************************************/
+/********************************************//**
+ *  MemoryControl controls memory allocation.
+ ***********************************************/
 class MemoryControl {
  public:
   virtual void *allocate(size_t);
