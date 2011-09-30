@@ -1,5 +1,6 @@
 AC_INIT([cpptoken], [1.0])
 AM_INIT_AUTOMAKE
+AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([src/re_parse.cpp])
 AC_CONFIG_FILES([Makefile src/Makefile include/Makefile])
 
