@@ -39,20 +39,39 @@ DX_INIT_DOXYGEN([cpptoken], [Doxygen])
 AC_CONFIG_HEADERS([src/config.h])
 AC_CHECK_HEADERS([unistd.h cstddef cstring exception list sstream iostream],,
                  [AC_MSG_ERROR([Required header files missing.])])
+AC_HEADER_STDBOOL
+AC_CHECK_TYPES([size_t],[],[AC_MSG_ERROR([No header file for ptrdiff_t])])
+AC_CHECK_TYPES([ptrdiff_t],[],[AC_MSG_ERROR([No header file for ptrdiff_t])])
+AC_FUNC_MALLOC
 
 AC_PATH_PROG([VALGRIND], [valgrind])
 
 AC_OUTPUT
 
 echo ""
-echo "Summary of options"
+echo "Summary of required items"
 echo ""
 echo "AS_HELP_STRING([Use multi-threading],[${mt_exec}])"
+echo "AS_HELP_STRING([Have C++ STL],[${ax_cv_cxx_have_stl}])"
+echo "AS_HELP_STRING([Have C++ namespaces],[${ax_cv_cxx_namespaces}])"
+echo "AS_HELP_STRING([Have stdbool],[${ac_cv_header_stdbool_h}])"
+echo "AS_HELP_STRING([Have malloc],[${ac_cv_func_malloc_0_nonnull}])"
+
+echo ""
+echo "Summary of optional items"
+echo ""
 echo "AS_HELP_STRING([valgrind path],[${VALGRIND}])"
-echo "AS_HELP_STRING([Have STL],[${ax_cxx_have_stl}])"
 AS_IF([test "x${DX_DOXYGEN}" = "x"],
       [echo "AS_HELP_STRING([Using doxygen],[no])"],
       [echo "AS_HELP_STRING([Using doxygen at],[${DX_DOXYGEN}])"])
-
-
 echo ""
+AS_IF([test "x${mt_exec}" != "xyes"],
+      [AC_MSG_ERROR([Required thread support missing. Build stops.])])
+AS_IF([test "x${ax_cv_cxx_have_stl}" != "xyes"],
+      [AC_MSG_ERROR([Required STL support missing. Build stops.])])
+AS_IF([test "x${ax_cv_cxx_namespaces}" != "xyes"],
+      [AC_MSG_ERROR([Required C++ namespaces support missing. Build stops.])])
+AS_IF([test "x${ac_cv_header_stdbool_h}" != "xyes"],
+      [AC_MSG_ERROR([Required stdbool.h support missing. Build stops.])])
+AS_IF([test "x${ac_cv_func_malloc_0_nonnull}" != "xyes"],
+      [AC_MSG_ERROR([Required malloc support missing. Build stops.])])
