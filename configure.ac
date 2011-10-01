@@ -34,8 +34,12 @@ fi
   
 DX_DOXYGEN_FEATURE(ON)
 DX_HTML_FEATURE(ON)
-DX_PDF_FEATURE(OFF)
+DX_PDF_FEATURE(ON)
 DX_INIT_DOXYGEN([cpptoken], [Doxygen])
+
+AM_CONDITIONAL([HAVE_DOXYGEN],
+               [test -n "$DOXYGEN"])AM_COND_IF([HAVE_DOXYGEN],
+               [AC_CONFIG_FILES([Doxyfile])])
 
 AC_CONFIG_HEADERS([src/config.h])
 AC_CHECK_HEADERS([unistd.h cstddef cstring exception list sstream iostream],,
@@ -62,9 +66,15 @@ echo ""
 echo "Summary of optional items"
 echo ""
 echo "AS_HELP_STRING([valgrind path],[${VALGRIND}])"
-AS_IF([test "x${DX_DOXYGEN}" = "x"],
-      [echo "AS_HELP_STRING([Using doxygen],[no])"],
-      [echo "AS_HELP_STRING([Using doxygen at],[${DX_DOXYGEN}])"])
+AS_IF([test "x${DX_FLAG_doc}" = "x1"],
+      [echo "AS_HELP_STRING([Using doxygen],[yes])"],
+      [echo "AS_HELP_STRING([Using doxygen at],[no])"])
+AS_IF([test "x${DX_FLAG_html}" = "x1"],
+      [echo "AS_HELP_STRING([Generating doxygen HTML],[yes])"],
+      [echo "AS_HELP_STRING([Generating doxygen HTML],[no])"])
+AS_IF([test "x${DX_FLAG_pdf}" = "x1"],
+      [echo "AS_HELP_STRING([Generating doxygen PDF],[yes])"],
+      [echo "AS_HELP_STRING([Generating doxygen PDF],[no])"])
 echo ""
 AS_IF([test "x${mt_exec}" != "xyes"],
       [AC_MSG_ERROR([Required thread support missing. Build stops.])])
