@@ -18,5 +18,5 @@ rm -f include/Makefile include/Makefile.in
 
 rm -fr autom4te.cache .deps src/.libs src/.deps docs html latex
 
-rm -f texput.log
+rm -f doxyfile texput.log
 
