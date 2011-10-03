@@ -45,21 +45,32 @@ class REToken;
 struct TokenList2;
 struct PatternAction;
 
-/********************************************//**
+/*********************************************************/
+
+/**
  * MemoryControl controls memory allocation.
  *
  * An instance of this class is required to create a Builder object.
  * The user provided allocate and deallocate methods will be used for
  * all memory management.
  * 
- ***********************************************/
+ */
 class MemoryControl {
  public:
   virtual void *allocate(size_t);
   virtual void deallocate(void *, size_t);
 };
 
-/*******************************************************/
+/*********************************************************/
+
+/**
+*
+* The Alloc template is intended for internal use
+* of cpptoken. It is here because I could not find
+* a way to make the template private. Please do not
+* use it.
+*
+*/
 template <class T>
 class Alloc  {
   MemoryControl *mc;
@@ -141,6 +152,9 @@ bool operator!= (const Alloc<T1>&, const Alloc<T2>&) throw() {
 
 /*******************************************************/
 
+/**
+ * Used to represent a syntax error in a regular expression.
+ */
 class SyntaxError : public std::exception {
   private:
     size_t m_errIdx;
@@ -152,6 +166,11 @@ class SyntaxError : public std::exception {
         m_errIdx(idx),
         m_reason(msg) {;};
 
+    /**
+     * Not yet supported.
+     *
+     * Currently this will always return a fixed value, most likely 1 or 0.
+     */
     size_t getErrorIndex() const throw();
 };
 
@@ -161,6 +180,11 @@ typedef void *(*action_func)(void *userArg, const char *str, size_t len);
 typedef unsigned char uchar;
 typedef list<uchar, Alloc<uchar> > UCharList2;
 
+/**
+ * Represents run time limits for DFA construction.
+ *
+ * Currently the limits are unused, but are in place for the future.
+ */
 class BuilderLimits {
   size_t m_maxTimeInSeconds;
   size_t m_maxStates;
@@ -172,6 +196,13 @@ class BuilderLimits {
       m_maxStates(0) {;};
 };
 
+/**
+ * Primary interface to cpptoken.
+ *
+ * An instance of the Builder class is used to construct the
+ * DFA that will be used to match text.
+ *
+ */
 class Builder {
  private:
   MemoryControl *m_mc;
