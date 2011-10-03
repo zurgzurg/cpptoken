@@ -16,7 +16,7 @@ rm -f src/stamp-h1 src/config.h src/Makefile
 rm -f include/Makefile include/Makefile.in
 
 
-rm -fr autom4te.cache .deps src/.libs src/.deps docs html latex
+rm -fr autom4te.cache .deps src/.libs src/.deps
 
 rm -f doxyfile texput.log
-
+rm -fr doxygen-doc
