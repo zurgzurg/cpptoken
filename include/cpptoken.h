@@ -33,6 +33,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+/**
+ * cpptoken is a library that generated scanners at runtime.
+ */
 namespace cpptoken {
 
 class FABase;
@@ -43,7 +46,12 @@ struct TokenList2;
 struct PatternAction;
 
 /********************************************//**
- *  MemoryControl controls memory allocation.
+ * MemoryControl controls memory allocation.
+ *
+ * An instance of this class is required to create a Builder object.
+ * The user provided allocate and deallocate methods will be used for
+ * all memory management.
+ * 
  ***********************************************/
 class MemoryControl {
  public:
