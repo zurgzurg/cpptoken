@@ -219,6 +219,10 @@ class Builder {
   UCharList2 *m_tmpInvCharList;
 
  public:
+  /**
+   * Primary way of creating a Builder object.
+   *
+   */
   Builder(MemoryControl *);
   ~Builder();
 
