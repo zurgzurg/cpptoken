@@ -36,12 +36,44 @@
 /**
  * cpptoken is a library that generated scanners at runtime.
  *
- * Note: There are many functions that have public scope, but
+ * @Note There are many functions that have public scope, but
  * are not intended for use outside of the cpptoken package. In
  * general any function that it not documented as being part of
  * the API should not be used. The 'private' functions are not
  * private to make it easier to have better test coverage.
  *
+ */
+
+/**
+ * @mainpage notitle
+ * @namespace cpptoken
+ *
+ * This is the main page for this package.
+ *
+ */
+
+/**
+ * @page RegularExpressions
+ * @namespace cpptoken
+ *
+ * @Section <b>Regular Expression Syntax</b>
+ *
+ * For ASCII regular expressions.
+ *
+ * The cpptoken package only supported DFA related regular expressions.
+ * Specifically there are many constructs that only have meaning when
+ * using an NFA based matched.
+ *
+ * First the operators supported: concatenation, alternation, kleene star,
+ * parenthesis, char classes.
+ *
+ *    <re> <re> -- two regular 
+ * 
+ * @Section <b>Character Classes</b>
+ *
+ * A character class text between '[' and ']'. All charecters
+ * within the square brackets can be matched.
+ * 
  */
 namespace cpptoken {
 
@@ -209,6 +241,10 @@ class BuilderLimits {
  * An instance of the Builder class is used to construct the
  * DFA that will be used to match text.
  *
+ * Note the copy constructor and assignment operator are private
+ * and not implemented, so there is no supported way to perform
+ * those operations.
+ *
  */
 class Builder {
  private:
@@ -220,10 +256,13 @@ class Builder {
 
  public:
   /**
-   * Primary way of creating a Builder object.
+   * Only way of creating a Builder object.
    *
+   * The MemoryControl object must not be NULL, it will be used
+   * for all memory allocation.
    */
   Builder(MemoryControl *);
+  
   ~Builder();
 
   /// This is a private function.
@@ -234,7 +273,15 @@ class Builder {
   static void operator delete(void *ptr, size_t sz, MemoryControl *mc);
 
   /* public api */
+
+  /**
+   * Add a regular expression to the builder.
+   */
   void addRegEx(const char *regex, action_func, void *userArg);
+
+  /**
+   *
+   */
   void addRegEx(const char *regex, void *tok);
   
   /* not for external use */
@@ -242,6 +289,10 @@ class Builder {
 
   /* tokenize regex */
   TokenList2 *tokenizeRegEx(const char *regex, size_t start, size_t len);
+
+ private:
+  Builder(const Builder &);
+  Builder &operator=(const Builder &);
 };
 
 

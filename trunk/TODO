@@ -1,5 +1,6 @@
 Not Done
 ---------------
+- need priority input when adding regular expressions to builder
 - completely change TokenList --> TokenList2
 - track char position in REToken() to generate better error messages
 - parsing - hex chars
