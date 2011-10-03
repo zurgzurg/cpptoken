@@ -35,6 +35,13 @@
 
 /**
  * cpptoken is a library that generated scanners at runtime.
+ *
+ * Note: There are many functions that have public scope, but
+ * are not intended for use outside of the cpptoken package. In
+ * general any function that it not documented as being part of
+ * the API should not be used. The 'private' functions are not
+ * private to make it easier to have better test coverage.
+ *
  */
 namespace cpptoken {
 
@@ -215,8 +222,11 @@ class Builder {
   Builder(MemoryControl *);
   ~Builder();
 
+  /// This is a private function.
   static void *operator new(size_t sz);
+  /// This is a private function.
   static void *operator new(size_t sz, MemoryControl *mc);
+  /// This is a private function.
   static void operator delete(void *ptr, size_t sz, MemoryControl *mc);
 
   /* public api */
