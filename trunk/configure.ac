@@ -91,3 +91,8 @@ AS_IF([test "x${ac_cv_header_stdbool_h}" != "xyes"],
       [AC_MSG_ERROR([Required stdbool.h support missing. Build stops.])])
 AS_IF([test "x${ac_cv_func_malloc_0_nonnull}" != "xyes"],
       [AC_MSG_ERROR([Required malloc support missing. Build stops.])])
+
+echo ""
+echo "Useful next steps:"
+echo "  make doxygen-doc -- generates documentation"
+echo ""
