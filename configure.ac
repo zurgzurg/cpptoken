@@ -43,6 +43,9 @@ DX_XML_FEATURE(OFF)
 DX_PS_FEATURE(OFF)
 DX_INIT_DOXYGEN([cpptoken], [doxyfile])
 
+AS_IF([test "x${DX_FLAG_doc}" = "x1" ],
+      [AC_CONFIG_FILES(doxyfile)],[])
+
 AC_CONFIG_HEADERS([src/config.h])
 AC_CHECK_HEADERS([unistd.h cstddef cstring exception list sstream iostream],,
                  [AC_MSG_ERROR([Required header files missing.])])
