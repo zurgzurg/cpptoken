@@ -43,10 +43,6 @@ DX_XML_FEATURE(OFF)
 DX_PS_FEATURE(OFF)
 DX_INIT_DOXYGEN([cpptoken], [doxyfile])
 
-AM_CONDITIONAL([HAVE_DOXYGEN],
-               [test -n "$DOXYGEN"])AM_COND_IF([HAVE_DOXYGEN],
-               [AC_CONFIG_FILES([doxyfile])])
-
 AC_CONFIG_HEADERS([src/config.h])
 AC_CHECK_HEADERS([unistd.h cstddef cstring exception list sstream iostream],,
                  [AC_MSG_ERROR([Required header files missing.])])
