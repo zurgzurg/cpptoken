@@ -48,7 +48,9 @@
  * @mainpage notitle
  * @namespace cpptoken
  *
- * This is the main page for this package.
+ * The cpptoken package provides regular expression matching services
+ * that are well suited for building lexers. The lexer objects can be
+ * built at run time.
  *
  */
 
@@ -214,11 +216,13 @@ class SyntaxError : public std::exception {
 };
 
 /*******************************************************/
+
 /// Function to be called when a token is matched
 typedef void *(*action_func)(void *userArg, const char *str, size_t len);
 
-/// Basic typedef for some types of strings
 typedef unsigned char uchar;
+
+/// Private type
 typedef list<uchar, Alloc<uchar> > UCharList2;
 
 /**
