@@ -36,7 +36,7 @@
 /**
  * cpptoken is a library that generated scanners at runtime.
  *
- * @Note There are many functions that have public scope, but
+ * @note There are many functions that have public scope, but
  * are not intended for use outside of the cpptoken package. In
  * general any function that it not documented as being part of
  * the API should not be used. The 'private' functions are not
@@ -56,7 +56,7 @@
  * @page RegularExpressions
  * @namespace cpptoken
  *
- * @Section <b>Regular Expression Syntax</b>
+ * @section Regular Expression Syntax
  *
  * For ASCII regular expressions.
  *
@@ -67,9 +67,9 @@
  * First the operators supported: concatenation, alternation, kleene star,
  * parenthesis, char classes.
  *
- *    <re> <re> -- two regular 
+ *    \<re\> \<re\> -- two regular 
  * 
- * @Section <b>Character Classes</b>
+ * @section Character Classes
  *
  * A character class text between <tt>[</tt> and <tt>]</tt>. All charecters
  * within the square brackets can be matched.
@@ -214,8 +214,10 @@ class SyntaxError : public std::exception {
 };
 
 /*******************************************************/
+/// Function to be called when a token is matched
 typedef void *(*action_func)(void *userArg, const char *str, size_t len);
 
+/// Basic typedef for some types of strings
 typedef unsigned char uchar;
 typedef list<uchar, Alloc<uchar> > UCharList2;
 
