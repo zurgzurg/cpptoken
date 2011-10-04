@@ -71,7 +71,7 @@
  * 
  * @Section <b>Character Classes</b>
  *
- * A character class text between '[' and ']'. All charecters
+ * A character class text between <tt>[</tt> and <tt>]</tt>. All charecters
  * within the square brackets can be matched.
  * 
  */
