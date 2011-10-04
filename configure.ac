@@ -1,5 +1,6 @@
 AC_INIT([cpptoken], [1.0])
 AM_INIT_AUTOMAKE
+
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([src/re_parse.cpp])
 AC_CONFIG_FILES([Makefile src/Makefile include/Makefile])
@@ -32,6 +33,19 @@ if test "x${have_pthreads}" = "xyes"; then
   AC_CHECK_HEADERS([pthread.h], [], [have_pthreads=no])
 fi
   
+AC_CONFIG_HEADERS([src/config.h])
+AC_CHECK_HEADERS([unistd.h cstddef cstring exception list sstream iostream],,
+                 [AC_MSG_ERROR([Required header files missing.])])
+AC_HEADER_STDBOOL
+AC_CHECK_TYPES([size_t],[],[AC_MSG_ERROR([No header file for ptrdiff_t])])
+AC_CHECK_TYPES([ptrdiff_t],[],[AC_MSG_ERROR([No header file for ptrdiff_t])])
+AC_FUNC_MALLOC
+
+AC_PATH_PROG([VALGRIND], [valgrind])
+
+###############################################################
+## doxygen stuff
+###############################################################
 DX_DOXYGEN_FEATURE(ON)
 DX_HTML_FEATURE(ON)
 DX_PDF_FEATURE(ON)
@@ -43,21 +57,18 @@ DX_XML_FEATURE(OFF)
 DX_PS_FEATURE(OFF)
 DX_INIT_DOXYGEN([cpptoken], [doxyfile])
 
+
+###############################################################
+## actually generate the output
+###############################################################
 AS_IF([test "x${DX_FLAG_doc}" = "x1" ],
       [AC_CONFIG_FILES(doxyfile)],[])
 
-AC_CONFIG_HEADERS([src/config.h])
-AC_CHECK_HEADERS([unistd.h cstddef cstring exception list sstream iostream],,
-                 [AC_MSG_ERROR([Required header files missing.])])
-AC_HEADER_STDBOOL
-AC_CHECK_TYPES([size_t],[],[AC_MSG_ERROR([No header file for ptrdiff_t])])
-AC_CHECK_TYPES([ptrdiff_t],[],[AC_MSG_ERROR([No header file for ptrdiff_t])])
-AC_FUNC_MALLOC
-
-AC_PATH_PROG([VALGRIND], [valgrind])
-
 AC_OUTPUT
 
+###############################################################
+## summary
+###############################################################
 echo ""
 echo "Summary of required items"
 echo ""
