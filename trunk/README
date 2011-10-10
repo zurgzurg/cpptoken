@@ -1,0 +1,6 @@
+cpptoken is a C++ library that is well suited for creating
+scanners (the tranditional input stage to a parser). cpptoken
+is designed to be trivially portable to any posix system and
+should be easily portable to embedded systems as well.
+
+

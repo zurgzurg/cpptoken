@@ -39,8 +39,8 @@
  * @note There are many functions that have public scope, but
  * are not intended for use outside of the cpptoken package. In
  * general any function that it not documented as being part of
- * the API should not be used. The 'private' functions are not
- * private to make it easier to have better test coverage.
+ * the API should not be used. The functions are declared
+ * with public scope to assist in testing.
  *
  */
 
@@ -55,10 +55,12 @@
  */
 
 /**
- * @page RegularExpressions
- * @namespace cpptoken
+ * @page regularexpressions Regular Expression Syntax 
  *
- * @section Regular Expression Syntax
+ * This page describes the regular expressions syntax supported
+ * by cpptoken.
+ *
+ * @section s1 Regular Expression Syntax
  *
  * For ASCII regular expressions.
  *
@@ -71,12 +73,20 @@
  *
  *    \<re\> \<re\> -- two regular 
  * 
- * @section Character Classes
+ * @section s2 Character Classes
  *
- * A character class text between <tt>[</tt> and <tt>]</tt>. All charecters
- * within the square brackets can be matched.
+ * A character class is text between <tt>[</tt> and <tt>]</tt>. All
+ * characters within the square brackets can be matched. A dash
+ * character <tt>-</tt> can be used to specify a range of
+ * characters. To include the dash character list it as the first
+ * or last character. A circumflex <tt>^<\tt> is used to negate
+ * the character class. If the circumflex character is at any position
+ * other than right after the opening square bracket it is treated as
+ * a normal character.
  * 
  */
+
+
 namespace cpptoken {
 
 class FABase;

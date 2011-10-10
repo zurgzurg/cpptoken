@@ -105,5 +105,7 @@ AS_IF([test "x${ac_cv_func_malloc_0_nonnull}" != "xyes"],
 
 echo "Useful next steps:"
 echo "  make doxygen-doc -- generates documentation"
+echo "                      output into doxygen-doc/*"
+echo ""
 echo "  make check       -- run regression suite"
 echo ""
