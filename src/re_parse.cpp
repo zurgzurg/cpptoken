@@ -452,7 +452,7 @@ TokenList::buildCharClass(const uchar *start, const uchar *ptr,
     cur = *ptr;
 
     if (state == 0) {
-      /* zero state - go nothing */
+      /* zero state - got nothing */
       if (cur == '-') {
 	this->m_tmpCharList->push_back(cur);
 	ptr++;

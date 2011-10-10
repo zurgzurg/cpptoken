@@ -1262,6 +1262,14 @@ TC_Tokens204::run()
     ASSERT_TRUE(tlist.verifyEnd());
   }
 
+  {
+    TokenList2 tlist(&mc, alloc);
+    tlist.build("[a^]");
+    tlist.beginIteration();
+    ASSERT_TRUE(tlist.verifyNextCharClass("a^", 2));
+    ASSERT_TRUE(tlist.verifyEnd());
+  }
+
   this->setStatus(true);
 }
 
