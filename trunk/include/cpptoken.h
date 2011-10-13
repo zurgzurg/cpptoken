@@ -60,7 +60,7 @@
  * This page describes the regular expressions syntax supported
  * by cpptoken.
  *
- * @section s1 Regular Expression Syntax
+ * @section resyntop Regular Expression Syntax
  *
  * For ASCII regular expressions.
  *
@@ -73,7 +73,17 @@
  *
  *    \<re\> \<re\> -- two regular 
  * 
- * @section s2 Character Classes
+ * @section resynbasic
+ *
+ * A basic regular expression is a single character. Special meta characters
+ * need to be escaped in some way. The full set of special characters is
+ * <tt>{ } [ ] * |<\tt>
+ *
+ * @section resynconcat
+ * 
+ * The most basic
+ * 
+ * @section resyncharclass Character Classes
  *
  * A character class is text between <tt>[</tt> and <tt>]</tt>. All
  * characters within the square brackets can be matched. A dash
@@ -83,6 +93,41 @@
  * the character class. If the circumflex character is at any position
  * other than right after the opening square bracket it is treated as
  * a normal character.
+ * 
+ * @section resynquant Quantifiers
+ * 
+ * cpptoken supports quantifiers, which can be used to specify the
+ * number of times that a regular expression can be repeated. A
+ * quantifier looks like <tt>{X,Y}</tt>, or <tt>{X}</tt> or
+ * <tt>{,Y}</tt> or <tt>{X,}</tt>. To help with readability whitespace
+ * can be added after the opening curly brace, surrounding the comma,
+ * and before the closing brace. A quantier specifies that the
+ * immediately preceding regular expression is repeated from X to Y
+ * times. If both X and Y are present then Y must be greater than or
+ * equal to X. If a single number is in the curly braces then the
+ * previous regular expression must be repeated exactly X times. If
+ * there is a comma and only one number the missing number is either
+ * zero or infinity.
+ *
+ * @note Caution should be used with quantifiers. Since cpptoken builds
+ * DFA's the quantifiers will be fully "unrolled". Meaning that the
+ * simply shorthand can expand to very large regular expressions and
+ * result in a correspondingly large DFA. For example "a{1,30000}" will
+ * create a DFA with more than thirty thousand states, yet the regular
+ * expression itself is only ten characters long.
+ * 
+ * To facilitate control over run away regular expressions there is
+ * a BuilderLimits class that can be used to limit the number of states
+ * in the DFA as well as the total amount of time for building the DFA.
+ * 
+ * @section resynalt Alternation
+ * 
+ * The <tt>|</tt> character is used as a kind of "or" choice in a regular
+ * expression. For RE1|RE2 the meaning is regular expression 1 or regular
+ * expression 2.
+ * 
+ * @note Watch out for precedence.
+ * 
  * 
  */
 
