@@ -1,0 +1,1 @@
+Like lex or flex - but natively written in C++.
